@@ -1,44 +1,61 @@
 services:
-  postgres:
-    image: pgvector/pgvector:pg18
-    container_name: adh-postgres
-    restart: unless-stopped
+  db:
+    image: pgvector/pgvector:pg17
+    container_name: adh-db
     environment:
-      POSTGRES_USER: adh_user
-      POSTGRES_PASSWORD: adh_password
       POSTGRES_DB: adh_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql
+      - postgres_data:/var/lib/postgresql/data
       - ./db/init:/docker-entrypoint-initdb.d
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U adh_user -d adh_db"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
     networks:
       - adh-network
 
   adminer:
-    image: adminer:4
+    image: adminer
     container_name: adh-adminer
-    restart: unless-stopped
+    restart: always
     ports:
       - "8080:8080"
-    environment:
-      ADMINER_DEFAULT_SERVER: postgres
-    depends_on:
-      postgres:
-        condition: service_healthy
     networks:
       - adh-network
 
-volumes:
-  postgres_data:
-    name: adh-postgres-data
+  ollama:
+    image: ollama/ollama
+    container_name: adh-ollama
+    volumes:
+      - ollama_data:/root/.ollama
+    # Isolated network: Ollama is only accessible by the backend, no public internet access needed for local model
+    networks:
+      - ai-internal-network
+
+  api:
+    build:
+      context: .
+      dockerfile: ADH/src/API/Dockerfile
+    container_name: adh-api
+    ports:
+      - "5000:5000"
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=db;Database=adh_db;Username=postgres;Password=password
+      - Ollama__BaseUrl=http://ollama:11434
+    depends_on:
+      - db
+      - ollama
+    networks:
+      - adh-network
+      - ai-internal-network
 
 networks:
   adh-network:
-    name: adh-network
     driver: bridge
+  ai-internal-network:
+    # This network is isolated for backend-to-model communication
+    internal: true
+
+volumes:
+  postgres_data:
+  ollama_data:

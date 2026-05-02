@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  openldap:
+    image: osixia/openldap:latest
+    container_name: adh-ldap-test
+    environment:
+      - LDAP_ORGANISATION=ADH-Test
+      - LDAP_DOMAIN=adh.local
+      - LDAP_ADMIN_PASSWORD=admin
+      - LDAP_CONFIG_PASSWORD=config
+    ports:
+      - "389:389"
+      - "636:636"
+    volumes:
+      - ./tests/ldap-init:/container/service/slapd/assets/config/bootstrap/ldif/custom
+
+  phpldapadmin:
+    image: osixia/phpldapadmin:latest
+    container_name: adh-ldap-ui
+    environment:
+      - PHPLDAPADMIN_LDAP_HOSTS=openldap
+      - PHPLDAPADMIN_HTTPS=false
+    ports:
+      - "8080:80"
+    depends_on:
+      - openldap
