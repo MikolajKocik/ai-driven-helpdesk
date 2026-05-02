@@ -1,0 +1,6 @@
+@ADH.API_HostAddress = http://localhost:5276
+
+GET {{ADH.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

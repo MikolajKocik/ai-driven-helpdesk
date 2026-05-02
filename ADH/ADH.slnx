@@ -1,0 +1,15 @@
+<Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/src/API/">
+    <Project Path="src/API/ADH.API.csproj" />
+  </Folder>
+  <Folder Name="/src/Application/">
+    <Project Path="src/Application/ADH.Application.csproj" />
+  </Folder>
+  <Folder Name="/src/Core/">
+    <Project Path="src/Core/ADH.Core.csproj" />
+  </Folder>
+  <Folder Name="/src/Infrastructure/">
+    <Project Path="src/Infrastructure/ADH.Infrastructure.csproj" />
+  </Folder>
+</Solution>
