@@ -1,0 +1,27 @@
+dn: ou=users,dc=adh,dc=local
+objectClass: organizationalUnit
+ou: users
+
+dn: cn=Mikołaj Kocik,ou=users,dc=adh,dc=local
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+cn: Mikołaj Kocik
+sn: Kocik
+uid: mkocik
+sAMAccountName: mkocik
+userPassword: password123
+uidNumber: 1000
+gidNumber: 1000
+homeDirectory: /home/mkocik
+mail: mikolaj@adh.local
+displayName: Mikołaj Kocik
+
+dn: ou=groups,dc=adh,dc=local
+objectClass: organizationalUnit
+ou: groups
+
+dn: cn=Domain Admins,ou=groups,dc=adh,dc=local
+objectClass: groupOfNames
+cn: Domain Admins
+member: cn=Mikołaj Kocik,ou=users,dc=adh,dc=local
