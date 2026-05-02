@@ -1,41 +1,86 @@
-var builder = WebApplication.CreateBuilder(args);
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using ADH.Infrastructure.DependencyInjection;
+using ADH.API.Middleware;
+using ADH.API.Extensions;
+using ADH.API.Endpoints.Internal;
+using ADH.API.Endpoints.External;
+using ADH.Application.Validators;
+using FluentValidation;
+using Asp.Versioning;
+using Asp.Versioning.Builder;
+using Serilog;
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-var app = builder.Build();
+builder.Configuration
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile("appsettings.local.json", optional: true, reloadOnChange: true)
+    .AddEnvironmentVariables();
 
-// Configure the HTTP request pipeline.
+// Configure Serilog
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .Enrich.FromLogContext()
+    .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}")
+    .CreateLogger();
+
+builder.Host.UseSerilog();
+
+// Add core services
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+builder.Services.AddSignalR();
+builder.Services.AddHttpClient();
+
+// Custom Extensions
+builder.Services.AddAppApiVersioning();
+builder.Services.AddAppAuthentication(builder.Configuration);
+builder.Services.AddAppRateLimiting();
+builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddAiServices();
+
+// Register Validators
+builder.Services.AddValidatorsFromAssemblyContaining<LoginRequestValidator>();
+
+WebApplication app = builder.Build();
+
+// Configure Middleware
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
+app.UseAuthentication();
+app.UseAuthorization();
+app.UseRateLimiter();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+app.UseMiddleware<PerformanceLoggingMiddleware>();
 
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
+// API Versioning Group
+ApiVersionSet apiVersionSet = app.NewApiVersionSet()
+    .HasApiVersion(new ApiVersion(1, 0))
+    .ReportApiVersions()
+    .Build();
+
+RouteGroupBuilder versionedGroup = app.MapGroup("api/v{version:apiVersion}")
+    .WithApiVersionSet(apiVersionSet)
+    .RequireRateLimiting("fixed-api");
+
+// Map Endpoints
+versionedGroup.MapAuthEndpoints();
+versionedGroup.MapTicketEndpoints();
+versionedGroup.MapChatEndpoints();
+versionedGroup.MapHelpArticleEndpoints();
+versionedGroup.MapStatsEndpoints();
 
 app.Run();
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
+public partial class Program { }
