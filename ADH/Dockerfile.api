@@ -3,17 +3,17 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /source
 
 # Copy csproj and restore as distinct layers
-COPY ["ADH/src/Core/ADH.Core.csproj", "Core/"]
-COPY ["ADH/src/Application/ADH.Application.csproj", "Application/"]
-COPY ["ADH/src/Infrastructure/ADH.Infrastructure.csproj", "Infrastructure/"]
-COPY ["ADH/src/API/ADH.API.csproj", "API/"]
+COPY ["src/Core/ADH.Core.csproj", "Core/"]
+COPY ["src/Application/ADH.Application.csproj", "Application/"]
+COPY ["src/Infrastructure/ADH.Infrastructure.csproj", "Infrastructure/"]
+COPY ["src/API/ADH.API.csproj", "API/"]
 RUN dotnet restore "API/ADH.API.csproj"
 
 # Copy everything else and build
-COPY ["ADH/src/Core/", "Core/"]
-COPY ["ADH/src/Application/", "Application/"]
-COPY ["ADH/src/Infrastructure/", "Infrastructure/"]
-COPY ["ADH/src/API/", "API/"]
+COPY ["src/Core/", "Core/"]
+COPY ["src/Application/", "Application/"]
+COPY ["src/Infrastructure/", "Infrastructure/"]
+COPY ["src/API/", "API/"]
 WORKDIR "/source/API"
 RUN dotnet publish "ADH.API.csproj" -c Release -o /app/publish
 

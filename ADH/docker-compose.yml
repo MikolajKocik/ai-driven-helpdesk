@@ -7,7 +7,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./db/init:/docker-entrypoint-initdb.d
@@ -32,14 +32,25 @@ services:
     networks:
       - ai-internal-network
 
+  frontend:
+    container_name: adh-frontend
+    build: 
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "3000:80"
+    networks:
+      - adh-network
+
   api:
     build:
       context: .
-      dockerfile: ADH/src/API/Dockerfile
+      dockerfile: Dockerfile.api
     container_name: adh-api
     ports:
       - "5000:5000"
     environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5000
       - ConnectionStrings__DefaultConnection=Host=db;Database=adh_db;Username=postgres;Password=password
       - Ollama__BaseUrl=http://ollama:11434
     depends_on:
