@@ -1,7 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using ADH.Core.Interfaces;
+using ADH.Application.Interfaces;
 using Microsoft.AspNetCore.SignalR;
 using ADH.Infrastructure.Hubs;
 using Microsoft.Extensions.DependencyInjection;

@@ -1,4 +1,4 @@
-using ADH.Core.Interfaces;
+using ADH.Application.Interfaces;
 using Microsoft.Extensions.Logging;
 using System;
 

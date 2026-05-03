@@ -6,8 +6,8 @@ using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using System.Text;
-using ADH.Core.Interfaces;
-using ADH.Infrastructure.Services;
+using ADH.Application.Interfaces;
+using ADH.Infrastructure.Services.Identity;
 
 namespace ADH.API.Extensions;
 
