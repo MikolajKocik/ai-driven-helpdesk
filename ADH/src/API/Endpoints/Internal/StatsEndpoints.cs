@@ -19,7 +19,7 @@ public static class StatsEndpoints
         app.MapGet("stats", async (ApplicationDbContext context) =>
         {
             int totalTickets = await context.Tickets.CountAsync();
-            int resolvedTickets = await context.Tickets.CountAsync(t => t.IsResolved);
+            int resolvedTickets = await context.Tickets.CountAsync(t => t.Status == "Resolved" || t.Status == "Closed");
             int totalArticles = await context.HelpArticles.CountAsync();
             int totalUsers = await context.Users.CountAsync();
             

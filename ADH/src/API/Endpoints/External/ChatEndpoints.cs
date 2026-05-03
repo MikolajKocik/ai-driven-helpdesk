@@ -6,8 +6,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
-using ADH.Core.Interfaces;
-using ADH.Infrastructure.Services;
+using ADH.Application.Interfaces;
+using ADH.Infrastructure.Services.AI;
+using ADH.Application.DTOs;
 
 namespace ADH.API.Endpoints.External;
 
@@ -32,19 +33,16 @@ public static class ChatEndpoints
                 else history.AddAssistantMessage(msg.Content);
             }
 
-            await foreach (StreamingChatMessageContent chunk in chatService.ChatStreamAsync(history))
+            await foreach (StreamingChatMessageContent chunk in chatService.ChatStreamAsync(history, context.RequestAborted))
             {
                 string json = JsonSerializer.Serialize(new { content = chunk.Content });
-                await context.Response.WriteAsync($"data: {json}\n\n");
-                await context.Response.Body.FlushAsync();
+                await context.Response.WriteAsync($"data: {json}\n\n", context.RequestAborted);
+                await context.Response.Body.FlushAsync(context.RequestAborted);
             }
 
-            await context.Response.WriteAsync("data: [DONE]\n\n");
-            await context.Response.Body.FlushAsync();
+            await context.Response.WriteAsync("data: [DONE]\n\n", context.RequestAborted);
+            await context.Response.Body.FlushAsync(context.RequestAborted);
         })
         .RequireRateLimiting("ai-concurrency");
     }
 }
-
-public record ChatMessage(string Role, string Content);
-public record ChatRequest(List<ChatMessage> Messages);

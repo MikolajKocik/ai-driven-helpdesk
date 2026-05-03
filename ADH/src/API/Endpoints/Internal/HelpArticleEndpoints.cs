@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using ADH.Core.Entities;
-using ADH.Core.Interfaces;
+using ADH.Application.Interfaces;
 using Microsoft.SemanticKernel.Embeddings;
 
 namespace ADH.API.Endpoints.Internal;

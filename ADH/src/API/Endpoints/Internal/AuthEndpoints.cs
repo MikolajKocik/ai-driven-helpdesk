@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using ADH.Core.Interfaces;
+using ADH.Application.Interfaces;
 using ADH.Core.Entities;
 using ADH.Application.DTOs;
 using ADH.API.Filters;

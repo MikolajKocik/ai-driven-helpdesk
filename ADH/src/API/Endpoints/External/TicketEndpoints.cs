@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using ADH.Core.Interfaces;
+using ADH.Application.Interfaces;
 using ADH.Core.Entities;
 
 namespace ADH.API.Endpoints.External;
