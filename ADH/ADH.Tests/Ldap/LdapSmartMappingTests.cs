@@ -5,6 +5,7 @@ using ADH.Core.Interfaces;
 using FluentAssertions;
 using Moq;
 using Xunit;
+using System.Reflection;
 
 namespace ADH.Tests.BackgroundServices;
 
@@ -30,8 +31,8 @@ public class LdapSmartMappingTests
         };
 
         // Act
-        var method = typeof(UserSyncService).GetMethod("MapGroupsToRole", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        var result = (string)method!.Invoke(_service, new object[] { groups })!;
+        MethodInfo? method = typeof(UserSyncService).GetMethod("MapGroupsToRole", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        string result = (string)method!.Invoke(_service, new object[] { groups })!;
 
         // Assert
         result.Should().Be("Admin");
@@ -41,15 +42,15 @@ public class LdapSmartMappingTests
     public void MapGroupsToRole_UserInAgentAndClientGroups_ReturnsAgent()
     {
         // Arrange
-        var groups = new List<string> 
+        List<string> groups = new List<string> 
         { 
             "CN=IT-Staff,OU=Groups,DC=corp", 
             "CN=Users,OU=Groups,DC=corp" 
         };
 
         // Act
-        var method = typeof(UserSyncService).GetMethod("MapGroupsToRole", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        var result = (string)method!.Invoke(_service, new object[] { groups })!;
+        MethodInfo? method = typeof(UserSyncService).GetMethod("MapGroupsToRole", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        string result = (string)method!.Invoke(_service, new object[] { groups })!;
 
         // Assert
         result.Should().Be("Agent");
@@ -59,11 +60,11 @@ public class LdapSmartMappingTests
     public void MapGroupsToRole_EmptyGroups_ReturnsClient()
     {
         // Arrange
-        var groups = new List<string>();
+        List<string> groups = new List<string>();
 
         // Act
-        var method = typeof(UserSyncService).GetMethod("MapGroupsToRole", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        var result = (string)method!.Invoke(_service, new object[] { groups })!;
+        MethodInfo? method = typeof(UserSyncService).GetMethod("MapGroupsToRole", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        string result = (string)method!.Invoke(_service, new object[] { groups })!;
 
         // Assert
         result.Should().Be("Client");
