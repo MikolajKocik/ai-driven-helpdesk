@@ -2,7 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
 using ADH.Infrastructure.Persistence;
-using ADH.Core.Interfaces;
+using ADH.Application.Interfaces;
 using ADH.Infrastructure.Repositories;
 using ADH.Infrastructure.Services;
 using ADH.Infrastructure.Services.Plugins;
@@ -19,6 +19,9 @@ using ADH.Infrastructure.Services.Plugins.Help;
 using ADH.Infrastructure.Services.Plugins.System;
 using ADH.Infrastructure.Services.Plugins.Tickets;
 using ADH.Infrastructure.Services.Plugins.Assets;
+using ADH.Infrastructure.Services.AI;
+using ADH.Infrastructure.Services.Identity;
+using ADH.Infrastructure.Services.Assets;
 using ADH.Infrastructure.Services.Jira;
 using System.Net.Http;
 
@@ -44,6 +47,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IHelpArticleRepository, HelpArticleRepository>();
         services.AddScoped<IAssetRepository, AssetRepository>();
         services.AddScoped<ISlaPolicyRepository, SlaPolicyRepository>();
+        
+        services.AddScoped<IAssetDiscoveryService, NetworkDiscoveryService>();
+        services.AddScoped<IAssetDiscoveryService, LdapAssetDiscoveryService>();
 
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
@@ -63,6 +69,7 @@ public static class ServiceCollectionExtensions
         services.AddHostedService<AiModelHealthCheckJob>();
         services.AddHostedService<InfrastructureSelfHealingJob>();
         services.AddHostedService<SlaEnforcementJob>();
+        services.AddHostedService<AssetDiscoveryJob>();
         services.AddHostedService<FileIndexerService>();
 
         return services;
@@ -73,6 +80,14 @@ public static class ServiceCollectionExtensions
     /// </summary>
     public static IServiceCollection AddAiServices(this IServiceCollection services)
     {
+        services.AddHttpClient("OllamaClient", (sp, client) =>
+        {
+            var configuration = sp.GetRequiredService<IConfiguration>();
+            var baseUrl = configuration["AI:Ollama:BaseUrl"] ?? "http://localhost:11434";
+            client.BaseAddress = new Uri(baseUrl);
+            client.Timeout = TimeSpan.FromMinutes(10);
+        });
+
         services.AddTransient<TicketPlugin>();
         services.AddTransient<HelpPlugin>();
         services.AddTransient<LdapSearchPlugin>();
@@ -83,6 +98,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<KnowledgeProposalPlugin>();
         services.AddTransient<AssetPlugin>();
         services.AddTransient<LocalAutomationPlugin>();
+        services.AddTransient<AssetDiscoveryPlugin>();
 
         services.AddTransient<Kernel>(sp =>
         {
@@ -122,12 +138,21 @@ public static class ServiceCollectionExtensions
             kernelBuilder.Plugins.AddFromObject(sp.GetRequiredService<KnowledgeProposalPlugin>());
             kernelBuilder.Plugins.AddFromObject(sp.GetRequiredService<AssetPlugin>());
             kernelBuilder.Plugins.AddFromObject(sp.GetRequiredService<LocalAutomationPlugin>());
+            kernelBuilder.Plugins.AddFromObject(sp.GetRequiredService<AssetDiscoveryPlugin>());
             
             // Add Security Filters
             kernelBuilder.Services.AddSingleton<IPromptRenderFilter>(sp.GetRequiredService<IPromptRenderFilter>());
             
             return kernelBuilder.Build();
         });
+
+        services.AddTransient<IChatCompletionService>(sp => 
+            sp.GetRequiredService<Kernel>()
+            .GetRequiredService<IChatCompletionService>());
+            
+        services.AddTransient<ITextEmbeddingGenerationService>(sp => 
+            sp.GetRequiredService<Kernel>()
+            .GetRequiredService<ITextEmbeddingGenerationService>());
 
         services.AddTransient<ChatOrchestratorService>();
 
