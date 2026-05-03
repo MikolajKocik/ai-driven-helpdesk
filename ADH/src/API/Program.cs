@@ -14,6 +14,10 @@ using FluentValidation;
 using Asp.Versioning;
 using Asp.Versioning.Builder;
 using Serilog;
+using ADH.Infrastructure.Hubs;
+using ADH.API.Helpers;
+using Microsoft.EntityFrameworkCore;
+using ADH.Infrastructure.Persistence;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -37,6 +41,17 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddSignalR();
 builder.Services.AddHttpClient();
 
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.WithOrigins(NetworkHelper.AllowedOrigins)
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
+
 // Custom Extensions
 builder.Services.AddAppApiVersioning();
 builder.Services.AddAppAuthentication(builder.Configuration);
@@ -49,6 +64,8 @@ builder.Services.AddValidatorsFromAssemblyContaining<LoginRequestValidator>();
 
 WebApplication app = builder.Build();
 
+app.UseCors();
+
 // Configure Middleware
 if (app.Environment.IsDevelopment())
 {
@@ -56,7 +73,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseRateLimiter();
@@ -66,13 +87,13 @@ app.UseMiddleware<PerformanceLoggingMiddleware>();
 
 // API Versioning Group
 ApiVersionSet apiVersionSet = app.NewApiVersionSet()
-    .HasApiVersion(new ApiVersion(1, 0))
+    .HasApiVersion(new ApiVersion(ApiHelper.MajorVersion, ApiHelper.MinorVersion))
     .ReportApiVersions()
     .Build();
 
-RouteGroupBuilder versionedGroup = app.MapGroup("api/v{version:apiVersion}")
+RouteGroupBuilder versionedGroup = app.MapGroup(ApiHelper.ApiVersionPrefix)
     .WithApiVersionSet(apiVersionSet)
-    .RequireRateLimiting("fixed-api");
+    .RequireRateLimiting(ApiHelper.RateLimitPolicyName);
 
 // Map Endpoints
 versionedGroup.MapAuthEndpoints();
@@ -81,6 +102,25 @@ versionedGroup.MapChatEndpoints();
 versionedGroup.MapHelpArticleEndpoints();
 versionedGroup.MapStatsEndpoints();
 
-app.Run();
+app.MapHub<ChatHub>("/hubs/chat");
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<ADH.Infrastructure.Persistence.ApplicationDbContext>();
+        var userRepo = services.GetRequiredService<ADH.Application.Interfaces.IUserRepository>();
+        
+        await DbInitializer.SeedAsync(context, userRepo);
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred during database initialization.");
+    }
+}
+
+await app.RunAsync();
 
 public partial class Program { }
