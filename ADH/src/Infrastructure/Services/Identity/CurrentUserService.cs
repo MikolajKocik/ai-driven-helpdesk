@@ -1,8 +1,8 @@
 using System.Security.Claims;
-using ADH.Core.Interfaces;
+using ADH.Application.Interfaces;
 using Microsoft.AspNetCore.Http;
 
-namespace ADH.Infrastructure.Services;
+namespace ADH.Infrastructure.Services.Identity;
 
 /// <summary>
 /// Service for accessing information about the current authenticated user from HttpContext.

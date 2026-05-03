@@ -1,7 +1,7 @@
 using System.Text.RegularExpressions;
-using ADH.Core.Interfaces;
+using ADH.Application.Interfaces;
 
-namespace ADH.Infrastructure.Services;
+namespace ADH.Infrastructure.Services.AI;
 
 public sealed class PiiScrubber : IPiiScrubber
 {

@@ -2,9 +2,9 @@ using Microsoft.SemanticKernel;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using ADH.Core.Interfaces;
+using ADH.Application.Interfaces;
 
-namespace ADH.Infrastructure.Services;
+namespace ADH.Infrastructure.Services.AI;
 
 /// <summary>
 /// Filter to detect and block potential prompt injection attempts in AI interactions.

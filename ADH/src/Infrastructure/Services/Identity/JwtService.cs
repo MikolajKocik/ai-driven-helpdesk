@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Security.Claims;
 using System.Text;
 using ADH.Core.Entities;
-using ADH.Core.Interfaces;
+using ADH.Application.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.IdentityModel.JsonWebTokens;
 
-namespace ADH.Infrastructure.Services;
+namespace ADH.Infrastructure.Services.Identity;
 
 /// <summary>
 /// Modern implementation of IJwtService using Microsoft.IdentityModel.JsonWebTokens.

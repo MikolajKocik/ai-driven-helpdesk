@@ -1,7 +1,7 @@
-using ADH.Core.Interfaces;
+using ADH.Application.Interfaces;
 using Microsoft.Extensions.Configuration;
 
-namespace ADH.Infrastructure.Services;
+namespace ADH.Infrastructure.Services.AI;
 
 public sealed class AiProviderManager : IAiProviderManager
 {
@@ -22,6 +22,7 @@ public sealed class AiProviderManager : IAiProviderManager
         if (_isAirGapped && provider != "Ollama")
         {
             // In Air-Gapped mode, we don't allow switching to external providers
+            // the system works as on-premise
             return;
         }
         _currentProvider = provider;

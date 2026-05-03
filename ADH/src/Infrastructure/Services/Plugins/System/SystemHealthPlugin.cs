@@ -1,6 +1,6 @@
 using Microsoft.SemanticKernel;
 using System.ComponentModel;
-using ADH.Core.Interfaces;
+using ADH.Application.Interfaces;
 
 namespace ADH.Infrastructure.Services.Plugins.System;
 

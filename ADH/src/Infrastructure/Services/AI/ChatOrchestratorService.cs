@@ -2,13 +2,14 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.AspNetCore.SignalR;
 using ADH.Infrastructure.Hubs;
-using ADH.Core.Interfaces;
+using ADH.Application.Interfaces;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
-namespace ADH.Infrastructure.Services;
+namespace ADH.Infrastructure.Services.AI;
 
 /// <summary>
 /// Orchestrates chat completions using the Semantic Kernel and provides throttling to protect local resources.
@@ -36,25 +37,25 @@ public sealed class ChatOrchestratorService
     /// </summary>
     /// <param name="history">The chat history to provide context for the assistant.</param>
     /// <returns>An async enumerable of streaming chat message content.</returns>
-    public async IAsyncEnumerable<StreamingChatMessageContent> ChatStreamAsync(ChatHistory history)
+    public async IAsyncEnumerable<StreamingChatMessageContent> ChatStreamAsync(ChatHistory history, [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         PromptExecutionSettings executionSettings = new PromptExecutionSettings
         {
             FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
         };
-
+ 
         // Security: Scrub PII from the last user message
         ChatMessageContent? lastMessage = history.LastOrDefault();
         if (lastMessage != null && lastMessage.Role == AuthorRole.User && !string.IsNullOrEmpty(lastMessage.Content))
         {
             lastMessage.Content = _piiScrubber.Scrub(lastMessage.Content);
         }
-
-        await _aiSemaphore.WaitAsync();
+ 
+        await _aiSemaphore.WaitAsync(cancellationToken);
         try
         {
-            await _hubContext.Clients.All.SendAsync("AiStatus", "typing");
-            await foreach (StreamingChatMessageContent chunk in _chatCompletionService.GetStreamingChatMessageContentsAsync(history, executionSettings, _kernel))
+            await _hubContext.Clients.All.SendAsync("AiStatus", "typing", cancellationToken);
+            await foreach (StreamingChatMessageContent chunk in _chatCompletionService.GetStreamingChatMessageContentsAsync(history, executionSettings, _kernel, cancellationToken))
             {
                 yield return chunk;
             }

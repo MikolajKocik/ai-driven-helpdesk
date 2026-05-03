@@ -2,7 +2,7 @@ using Microsoft.SemanticKernel;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using ADH.Core.Entities;
-using ADH.Core.Interfaces;
+using ADH.Application.Interfaces;
 
 namespace ADH.Infrastructure.Services.Plugins.Help;
 

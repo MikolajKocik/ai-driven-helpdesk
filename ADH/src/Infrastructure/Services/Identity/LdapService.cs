@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.DirectoryServices.Protocols;
 using System.Net;
 using System.Threading.Tasks;
-using ADH.Core.Interfaces;
+using ADH.Application.Interfaces;
+using ADH.Application.DTOs;
 using Microsoft.Extensions.Configuration;
 
-namespace ADH.Infrastructure.Services;
+namespace ADH.Infrastructure.Services.Identity;
 
 public class LdapService : ILdapService
 {
@@ -243,5 +244,43 @@ public class LdapService : ILdapService
             _logger.LogError(ex, "Exception during LDAP password reset for {Username}", username);
             return false;
         }
+    }
+
+    public async Task<IEnumerable<LdapAssetDto>> GetComputersAsync()
+    {
+        _logger.LogInfo("Syncing computer objects from LDAP...");
+        List<LdapAssetDto> assets = new List<LdapAssetDto>();
+        IConfigurationSection config = _configuration.GetSection("Ldap");
+        string? server = config["Server"];
+        if (string.IsNullOrEmpty(server)) return assets;
+
+        try
+        {
+            using LdapConnection connection = new LdapConnection(new LdapDirectoryIdentifier(server));
+            connection.SessionOptions.ProtocolVersion = 3;
+            connection.Bind(new NetworkCredential(config["ServiceUser"], config["ServicePassword"], config["Domain"]));
+
+            SearchRequest searchRequest = new SearchRequest(
+                config["SearchBase"],
+                "(objectClass=computer)",
+                SearchScope.Subtree,
+                "cn", "operatingSystem", "serialNumber");
+
+            SearchResponse response = (SearchResponse)await Task.Run(() => connection.SendRequest(searchRequest));
+
+            foreach (SearchResultEntry entry in response.Entries)
+            {
+                assets.Add(new LdapAssetDto(
+                    entry.Attributes["cn"]?[0]?.ToString() ?? "Unknown",
+                    entry.Attributes["operatingSystem"]?[0]?.ToString() ?? "Unknown",
+                    entry.Attributes["serialNumber"]?[0]?.ToString() ?? Guid.NewGuid().ToString()
+                ));
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to sync computers from LDAP");
+        }
+        return assets;
     }
 }

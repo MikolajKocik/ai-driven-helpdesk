@@ -1,7 +1,7 @@
 using System.Threading.Channels;
 using System.Threading.Tasks;
 
-namespace ADH.Core.Interfaces;
+namespace ADH.Application.Interfaces;
 
 public record JiraWorkItem(string Summary, string Description);
 

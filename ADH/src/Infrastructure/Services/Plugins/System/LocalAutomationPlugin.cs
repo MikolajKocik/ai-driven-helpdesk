@@ -6,7 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using System;
 using System.Net.NetworkInformation;
-using ADH.Core.Interfaces;
+using ADH.Application.Interfaces;
 
 namespace ADH.Infrastructure.Services.Plugins.System;
 

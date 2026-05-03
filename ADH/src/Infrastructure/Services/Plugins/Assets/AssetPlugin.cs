@@ -1,7 +1,7 @@
 using Microsoft.SemanticKernel;
 using System.ComponentModel;
 using System.Threading.Tasks;
-using ADH.Core.Interfaces;
+using ADH.Application.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,7 +21,7 @@ public sealed class AssetPlugin
     public async Task<string> GetUserAssets(
         [Description("The unique ID of the user")] Guid userId)
     {
-        var assets = await _assetRepo.GetByUserIdAsync(userId);
+        IEnumerable<Core.Entities.Asset> assets = await _assetRepo.GetByUserIdAsync(userId);
         if (!assets.Any()) return "No assets found for this user.";
 
         return string.Join("\n", assets.Select(a => $"- {a.Name} ({a.AssetType?.Name}), Model: {a.Model}, SN: {a.SerialNumber}, Status: {a.Status}"));
@@ -31,7 +31,7 @@ public sealed class AssetPlugin
     public async Task<string> GetAssetDetails(
         [Description("The unique ID of the asset")] Guid assetId)
     {
-        var asset = await _assetRepo.GetByIdAsync(assetId);
+        Core.Entities.Asset? asset = await _assetRepo.GetByIdAsync(assetId);
         if (asset == null) return "Asset not found.";
 
         return $"Asset: {asset.Name}\nType: {asset.AssetType?.Name}\nModel: {asset.Model}\nSN: {asset.SerialNumber}\nOwner: {asset.User?.DisplayName}\nStatus: {asset.Status}";
