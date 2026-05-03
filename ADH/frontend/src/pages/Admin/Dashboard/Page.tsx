@@ -1,63 +1,90 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { BarChart3, Users, Ticket, BookOpen, CheckCircle, ArrowUpRight } from 'lucide-react';
+import { BarChart3, Users, Ticket, BookOpen, CheckCircle, ArrowUpRight, ArrowLeft, Loader2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { api } from '@/api';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/Card';
-import { useAuth } from '@/providers/AuthProvider';
 import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
+import { motion } from 'framer-motion';
 
 const AdminDashboardPage: React.FC = () => {
-  const { token } = useAuth();
-
   const { data: stats, isLoading } = useQuery({
     queryKey: ['admin-stats'],
     queryFn: async () => {
-      const res = await fetch('http://localhost:5033/api/stats', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      return res.json();
+      const res = await api.get('/stats');
+      return res.data;
     }
   });
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 }
+  };
+
   const StatCard = ({ title, value, icon: Icon, color, description }: any) => (
-    <Card className="bg-card/40 border-border/50 overflow-hidden relative">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        <Icon className="h-4 w-4 text-muted-foreground" />
-      </CardHeader>
-      <CardContent>
-        <div className="text-3xl font-bold">{value}</div>
-        <p className="text-xs text-muted-foreground mt-1">
-          {description}
-        </p>
-        <div 
-          className="absolute bottom-0 right-0 w-24 h-24 -mr-8 -mb-8 opacity-[0.03]" 
-          style={{ color }}
-        >
-          <Icon size={96} />
-        </div>
-      </CardContent>
-    </Card>
+    <motion.div variants={itemVariants}>
+      <Card className="bg-card/40 border-border/50 overflow-hidden relative backdrop-blur-sm hover:bg-card/60 transition-colors">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">{title}</CardTitle>
+          <Icon className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+          <div className="text-3xl font-bold">{value}</div>
+          <p className="text-xs text-muted-foreground mt-1">
+            {description}
+          </p>
+          <div 
+            className="absolute bottom-0 right-0 w-24 h-24 -mr-8 -mb-8 opacity-[0.05]" 
+            style={{ color }}
+          >
+            <Icon size={96} />
+          </div>
+        </CardContent>
+      </Card>
+    </motion.div>
   );
 
   if (isLoading) return (
-    <div className="flex-1 flex items-center justify-center">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+    <div className="flex-1 flex flex-col items-center justify-center">
+      <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
+      <p className="text-muted-foreground animate-pulse">Pobieranie statystyk...</p>
     </div>
   );
 
   return (
-    <div className="flex-1 flex flex-col gap-8">
+    <motion.div 
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="flex-1 flex flex-col gap-8"
+    >
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-primary/10 text-primary">
+        <div className="flex items-center gap-4">
+          <Link to="/helpdesk">
+            <Button variant="ghost" size="icon" className="rounded-full hover:bg-primary/10 hover:text-primary transition-colors">
+              <ArrowLeft size={20} />
+            </Button>
+          </Link>
+          <div className="p-2.5 rounded-xl bg-primary/10 text-primary shadow-lg shadow-primary/5">
             <BarChart3 size={24} />
           </div>
           <div>
-            <h1 className="text-2xl font-bold">Panel Analityczny</h1>
+            <h1 className="text-2xl font-bold tracking-tight">Panel Analityczny</h1>
             <p className="text-sm text-muted-foreground">Monitoruj wydajność swojego lokalnego asystenta AI</p>
           </div>
         </div>
-        <Badge variant="outline" className="gap-1.5 px-3 py-1 bg-background">
+        <Badge variant="outline" className="gap-1.5 px-3 py-1 bg-background/50 backdrop-blur-md">
           <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
           System Online
         </Badge>
@@ -71,36 +98,40 @@ const AdminDashboardPage: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <Card className="lg:col-span-2 bg-card/40 border-border/50 h-[300px] flex flex-col items-center justify-center text-center p-8">
-          <div className="p-4 rounded-full bg-secondary/50 mb-4">
-            <BarChart3 size={32} className="text-muted-foreground" />
-          </div>
-          <h3 className="text-lg font-semibold">Wykresy aktywności</h3>
-          <p className="text-muted-foreground max-w-sm mt-2">
-            Dane statystyczne są zbierane. Wykresy czasowe zostaną odblokowane po zebraniu danych z pełnych 7 dni.
-          </p>
-        </Card>
+        <motion.div variants={itemVariants} className="lg:col-span-2">
+          <Card className="bg-card/40 border-border/50 h-[300px] flex flex-col items-center justify-center text-center p-8 backdrop-blur-sm">
+            <div className="p-4 rounded-full bg-secondary/50 mb-4">
+              <BarChart3 size={32} className="text-muted-foreground" />
+            </div>
+            <h3 className="text-lg font-semibold">Wykresy aktywności</h3>
+            <p className="text-muted-foreground max-w-sm mt-2 text-sm">
+              Dane statystyczne są zbierane. Wykresy czasowe zostaną odblokowane po zebraniu danych z pełnych 7 dni.
+            </p>
+          </Card>
+        </motion.div>
 
-        <Card className="bg-card/40 border-border/50 overflow-hidden">
-          <CardHeader>
-            <CardTitle className="text-lg">Ostatnie Akcje</CardTitle>
-            <CardDescription>Logi systemowe w czasie rzeczywistym</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {[1, 2, 3].map((_, i) => (
-              <div key={i} className="flex items-center gap-3 text-sm">
-                <div className="w-2 h-2 rounded-full bg-primary" />
-                <div className="flex-1">
-                  <p className="font-medium">Utworzono ticket JIRA</p>
-                  <p className="text-xs text-muted-foreground text-opacity-70">2 minuty temu</p>
+        <motion.div variants={itemVariants}>
+          <Card className="bg-card/40 border-border/50 overflow-hidden backdrop-blur-sm h-full">
+            <CardHeader>
+              <CardTitle className="text-lg">Ostatnie Akcje</CardTitle>
+              <CardDescription>Logi systemowe w czasie rzeczywistym</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {[1, 2, 3, 4].map((_, i) => (
+                <div key={i} className="flex items-center gap-3 text-sm group">
+                  <div className="w-2 h-2 rounded-full bg-primary group-hover:scale-125 transition-transform" />
+                  <div className="flex-1">
+                    <p className="font-medium">Utworzono ticket JIRA</p>
+                    <p className="text-xs text-muted-foreground text-opacity-70">{(i + 1) * 2} minuty temu</p>
+                  </div>
+                  <ArrowUpRight size={14} className="text-muted-foreground group-hover:text-primary transition-colors" />
                 </div>
-                <ArrowUpRight size={14} className="text-muted-foreground" />
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+              ))}
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

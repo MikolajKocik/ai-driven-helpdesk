@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useAuth } from '@/providers/AuthProvider';
 import { useSignalR } from '@/providers/SignalRProvider';
 import { chatApi } from '@/api';
 import { Button } from '@/components/ui/Button';
@@ -18,7 +17,6 @@ const ChatInterface: React.FC = () => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isAiTyping, setIsAiTyping] = useState(false);
-  const { token } = useAuth();
   const { connection } = useSignalR();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -51,7 +49,7 @@ const ChatInterface: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const response = await chatApi.streamChat(token!, newMessages);
+      const response = await chatApi.streamChat(newMessages);
       const reader = response.body?.getReader();
       const decoder = new TextDecoder();
       let assistantMsg = '';

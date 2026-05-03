@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/providers/AuthProvider';
+import { authApi } from '@/api';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/Card';
@@ -13,19 +14,10 @@ const AuthPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:5033/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
-      });
-      if (response.ok) {
-        const data = await response.json();
-        login(data.token);
-      } else {
-        alert("Błąd logowania");
-      }
+      const data = await authApi.login(username, password);
+      login(data.token);
     } catch (err) {
-      alert("Błąd połączenia z serwerem");
+      alert("Błąd logowania lub połączenia z serwerem");
     }
   };
 

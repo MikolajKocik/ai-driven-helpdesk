@@ -1,17 +1,14 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useAuth } from '@/providers/AuthProvider';
 import { ticketsApi } from '@/api';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Ticket as TicketIcon, Calendar, Clock, ChevronRight } from 'lucide-react';
 
 const TicketList: React.FC = () => {
-  const { token } = useAuth();
-
   const { data: tickets = [], isLoading } = useQuery({
     queryKey: ['tickets'],
-    queryFn: () => ticketsApi.getTickets(token!)
+    queryFn: () => ticketsApi.getTickets()
   });
 
   if (isLoading) return (

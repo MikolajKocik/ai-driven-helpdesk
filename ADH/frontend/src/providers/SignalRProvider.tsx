@@ -15,7 +15,7 @@ export const SignalRProvider: React.FC<{ children: ReactNode }> = ({ children })
   useEffect(() => {
     if (token) {
       const newConnection = new signalR.HubConnectionBuilder()
-        .withUrl('http://localhost:5033/hubs/chat', {
+        .withUrl('http://localhost:5000/hubs/chat', {
           accessTokenFactory: () => token
         })
         .withAutomaticReconnect()
