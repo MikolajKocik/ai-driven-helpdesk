@@ -6,7 +6,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using ADH.Core.Attributes;
 using ADH.Core.Entities;
-using ADH.Core.Interfaces;
+using ADH.Application.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 

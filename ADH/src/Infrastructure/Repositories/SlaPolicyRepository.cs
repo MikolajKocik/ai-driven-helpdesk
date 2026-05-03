@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using ADH.Core.Entities;
-using ADH.Core.Interfaces;
+using ADH.Application.Interfaces;
 using ADH.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
