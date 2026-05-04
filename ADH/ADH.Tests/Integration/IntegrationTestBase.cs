@@ -16,14 +16,12 @@ public class IntegrationTestBase : WebApplicationFactory<Program>
         builder.UseSetting("Environment", "Testing");
         builder.ConfigureServices(services =>
         {
-            // Remove real DB
             var descriptor = services.SingleOrDefault(d => d.ServiceType == typeof(DbContextOptions<ApplicationDbContext>));
             if (descriptor != null) services.Remove(descriptor);
 
-            // Add In-Memory DB
             services.AddDbContext<ApplicationDbContext>(options =>
             {
-                options.UseInMemoryDatabase("IntegrationTestDb");
+                options.UseNpgsql("Host=localhost;Database=adh_test;Username=postgres;Password=postgres", x => x.UseVector());
             });
 
             // Disable background jobs for integration tests to avoid interference

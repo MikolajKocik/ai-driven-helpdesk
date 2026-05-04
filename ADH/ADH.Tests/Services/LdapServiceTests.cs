@@ -1,5 +1,5 @@
-using ADH.Core.Interfaces;
-using ADH.Infrastructure.Services;
+using ADH.Application.Interfaces;
+using ADH.Infrastructure.Services.Identity;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Moq;

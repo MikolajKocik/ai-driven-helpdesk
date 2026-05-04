@@ -1,8 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using ADH.Core.Interfaces;
-using ADH.Infrastructure.Services;
+using ADH.Application.Interfaces;
+using ADH.Application.DTOs;
+using ADH.Infrastructure.Services.Identity;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using ADH.Infrastructure.BackgroundServices;
-using ADH.Core.Interfaces;
+using ADH.Application.Interfaces;
 using FluentAssertions;
 using Moq;
 using Xunit;

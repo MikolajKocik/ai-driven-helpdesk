@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using ADH.Core.Interfaces;
+using ADH.Application.Interfaces;
+using ADH.Application.DTOs;
 using ADH.Infrastructure.Services.Plugins.Ldap;
 using FluentAssertions;
 using Moq;

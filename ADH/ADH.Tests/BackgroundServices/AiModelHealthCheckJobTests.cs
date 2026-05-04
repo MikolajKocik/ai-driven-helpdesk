@@ -3,7 +3,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using ADH.Core.Interfaces;
+using ADH.Application.Interfaces;
 using ADH.Infrastructure.BackgroundServices;
 using ADH.Infrastructure.Hubs;
 using FluentAssertions;
