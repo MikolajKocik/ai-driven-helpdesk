@@ -1,6 +1,7 @@
 import axios from 'axios';
 
 const API_BASE = 'http://localhost:5000/api/v1';
+const ROOT_BASE = 'http://localhost:5000';
 
 export const api = axios.create({
   baseURL: API_BASE,
@@ -20,6 +21,10 @@ api.interceptors.request.use((config) => {
 export const authApi = {
   login: async (username: string, password: string) => {
     const res = await api.post('/auth/login', { username, password });
+    return res.data;
+  },
+  googleLogin: async (idToken: string) => {
+    const res = await axios.post(`${ROOT_BASE}/auth/google/callback`, { idToken });
     return res.data;
   }
 };

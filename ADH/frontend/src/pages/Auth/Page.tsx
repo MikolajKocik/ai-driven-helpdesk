@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/Card';
 import { ShieldCheck } from 'lucide-react';
+import { GoogleLogin } from '@react-oauth/google';
+import { toast } from 'sonner';
 
 const AuthPage: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -17,7 +19,17 @@ const AuthPage: React.FC = () => {
       const data = await authApi.login(username, password);
       login(data.token);
     } catch (err) {
-      alert("Błąd logowania lub połączenia z serwerem");
+      toast.error("Błąd logowania lub połączenia z serwerem");
+    }
+  };
+
+  const handleGoogleSuccess = async (credentialResponse: any) => {
+    try {
+      const data = await authApi.googleLogin(credentialResponse.credential);
+      login(data.token);
+      toast.success("Zalogowano pomyślnie przez Google");
+    } catch (err) {
+      toast.error("Błąd logowania przez Google");
     }
   };
 
@@ -33,8 +45,28 @@ const AuthPage: React.FC = () => {
             Zaloguj się do swojego centrum pomocy AI
           </CardDescription>
         </CardHeader>
-        <form onSubmit={handleSubmit}>
-          <CardContent className="grid gap-4">
+
+        <CardContent className="grid gap-4">
+          <div className="flex flex-col items-center justify-center py-2 border-b border-border/50 mb-2">
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={() => toast.error("Błąd logowania Google")}
+              useOneTap
+              theme="filled_blue"
+              shape="pill"
+            />
+          </div>
+
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-card px-2 text-muted-foreground">lub zaloguj się tradycyjnie</span>
+            </div>
+          </div>
+
+          <form onSubmit={handleSubmit} className="grid gap-4">
             <div className="grid gap-2">
               <label htmlFor="username" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                 Użytkownik
@@ -59,13 +91,14 @@ const AuthPage: React.FC = () => {
                 required
               />
             </div>
-          </CardContent>
-          <CardFooter>
-            <Button className="w-full text-lg h-12" type="submit">
+            <Button className="w-full text-lg h-12 mt-2" type="submit">
               Zaloguj się
             </Button>
-          </CardFooter>
-        </form>
+          </form>
+        </CardContent>
+        <CardFooter className="flex justify-center">
+          <p className="text-xs text-muted-foreground">© 2026 AI-Driven Helpdesk</p>
+        </CardFooter>
       </Card>
     </div>
   );
