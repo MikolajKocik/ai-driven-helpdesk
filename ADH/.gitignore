@@ -3,6 +3,10 @@
 ##
 ## Get latest from `dotnet new gitignore`
 
+# client secrets
+*client.secrets.json
+*appsettings.local.json
+
 # dotenv files
 .env
 !.env.example
