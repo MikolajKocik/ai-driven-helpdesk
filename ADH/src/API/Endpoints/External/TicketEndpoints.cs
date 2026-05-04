@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using ADH.Application.Interfaces;
 using ADH.Core.Entities;
+using ADH.API.Helpers;
 
 namespace ADH.API.Endpoints.External;
 
@@ -30,7 +31,7 @@ public static class TicketEndpoints
         group.MapPost("/", async (Ticket ticket, ITicketRepository repo) =>
         {
             await repo.AddAsync(ticket);
-            return Results.Created($"/api/tickets/{ticket.Id}", ticket);
+            return Results.Created($"/api/v{ApiHelper.MajorVersion}/tickets/{ticket.Id}", ticket);
         });
     }
 }

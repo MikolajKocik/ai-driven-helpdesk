@@ -5,7 +5,7 @@ using ADH.Application.Interfaces;
 using ADH.Core.Entities;
 using ADH.Application.DTOs;
 using ADH.API.Filters;
-using BCrypt.Net;
+using ADH.API.Helpers;
 
 namespace ADH.API.Endpoints.Internal;
 
@@ -83,7 +83,7 @@ public static class AuthEndpoints
             };
 
             await repo.AddAsync(newUser);
-            return Results.Created($"/auth/user/{newUser.Id}", new { newUser.Id, newUser.Username });
+            return Results.Created($"/api/v{ApiHelper.MajorVersion}/auth/user/{newUser.Id}", new { newUser.Id, newUser.Username });
         })
         .AddEndpointFilter<ValidationFilter<RegisterRequest>>();
     }

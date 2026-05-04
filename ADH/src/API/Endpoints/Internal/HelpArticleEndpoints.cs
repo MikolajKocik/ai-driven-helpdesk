@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using ADH.Core.Entities;
 using ADH.Application.Interfaces;
-using Microsoft.SemanticKernel.Embeddings;
 using Microsoft.Extensions.AI;
+using ADH.API.Helpers;
 
 namespace ADH.API.Endpoints.Internal;
 
@@ -36,7 +36,7 @@ public static class HelpArticleEndpoints
             article.Embedding = embedding.Vector;
             
             await repo.AddAsync(article);
-            return Results.Created($"/api/articles/{article.Id}", new { article.Id, article.Title, article.Content });
+            return Results.Created($"/api/v{ApiHelper.MajorVersion}/articles/{article.Id}", new { article.Id, article.Title, article.Content });
         });
 
         group.MapDelete("/{id}", async (Guid id, IHelpArticleRepository repo) =>
