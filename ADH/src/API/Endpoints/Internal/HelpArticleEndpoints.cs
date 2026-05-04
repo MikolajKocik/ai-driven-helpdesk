@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Routing;
 using ADH.Core.Entities;
 using ADH.Application.Interfaces;
 using Microsoft.SemanticKernel.Embeddings;
+using Microsoft.Extensions.AI;
 
 namespace ADH.API.Endpoints.Internal;
 
@@ -25,10 +26,14 @@ public static class HelpArticleEndpoints
             return Results.Ok(articles.Select(a => new { a.Id, a.Title, a.Content }));
         });
 
-        group.MapPost("/", async (HelpArticle article, IHelpArticleRepository repo, ITextEmbeddingGenerationService embeddingService) =>
+        group.MapPost("/", async (
+            HelpArticle article, 
+            IHelpArticleRepository repo, 
+            IEmbeddingGenerator<string, Embedding<float>> embeddingService,
+            CancellationToken cancellationToken) =>
         {
-            ReadOnlyMemory<float> embedding = await embeddingService.GenerateEmbeddingAsync(article.Content);
-            article.Embedding = embedding.ToArray();
+            Embedding<float> embedding = await embeddingService.GenerateAsync(article.Content, null, cancellationToken);
+            article.Embedding = embedding.Vector;
             
             await repo.AddAsync(article);
             return Results.Created($"/api/articles/{article.Id}", new { article.Id, article.Title, article.Content });

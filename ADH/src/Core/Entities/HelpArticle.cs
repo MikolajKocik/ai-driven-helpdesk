@@ -1,5 +1,6 @@
 using System;
 using ADH.Core.Attributes;
+using Pgvector;
 
 namespace ADH.Core.Entities;
 
@@ -10,5 +11,5 @@ public class HelpArticle
     public string Title { get; set; } = string.Empty;
     public string Content { get; set; } = string.Empty;
     
-    public float[]? Embedding { get; set; }
+    public ReadOnlyMemory<float>? Embedding { get; set; }
 }
