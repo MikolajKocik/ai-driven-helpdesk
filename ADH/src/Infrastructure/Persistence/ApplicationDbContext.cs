@@ -78,15 +78,15 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Title).IsRequired().HasMaxLength(500);
             entity.Property(e => e.Content).IsRequired();
             
-            var vectorConverter = new ValueConverter<float[], Vector>(
-                v => new Vector(v),
-                v => v.ToArray()
+            var vectorConverter = new ValueConverter<ReadOnlyMemory<float>, Vector>(
+                v => new Vector(v.ToArray()),
+                v => new ReadOnlyMemory<float>(v.ToArray())
             );
 
-            var vectorComparer = new ValueComparer<float[]>(
-                (c1, c2) => c1 != null && c2 != null && c1.SequenceEqual(c2),
-                c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
-                c => c.ToArray()
+            var vectorComparer = new ValueComparer<ReadOnlyMemory<float>>(
+                (c1, c2) => c1.ToArray().SequenceEqual(c2.ToArray()),
+                c => c.ToArray().Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+                c => new ReadOnlyMemory<float>(c.ToArray())
             );
 
             if (Database.IsNpgsql())

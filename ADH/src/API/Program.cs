@@ -102,6 +102,9 @@ versionedGroup.MapChatEndpoints();
 versionedGroup.MapHelpArticleEndpoints();
 versionedGroup.MapStatsEndpoints();
 
+// Map Third-party OAuth endpoints (without versioning)
+app.MapThirdAuthEndpoints();
+
 app.MapHub<ChatHub>("/hubs/chat");
 
 using (var scope = app.Services.CreateScope())
