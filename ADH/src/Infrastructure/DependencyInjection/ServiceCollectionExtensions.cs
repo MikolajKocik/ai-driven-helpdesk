@@ -23,6 +23,7 @@ using ADH.Infrastructure.Services.AI;
 using ADH.Infrastructure.Services.Identity;
 using ADH.Infrastructure.Services.Assets;
 using ADH.Infrastructure.Services.Jira;
+using Microsoft.Extensions.AI;
 using System.Net.Http;
 
 namespace ADH.Infrastructure.DependencyInjection;
@@ -153,6 +154,9 @@ public static class ServiceCollectionExtensions
         services.AddTransient<ITextEmbeddingGenerationService>(sp => 
             sp.GetRequiredService<Kernel>()
             .GetRequiredService<ITextEmbeddingGenerationService>());
+
+        services.AddTransient<IEmbeddingGenerator<string, Embedding<float>>>(sp => 
+            sp.GetRequiredService<ITextEmbeddingGenerationService>().AsEmbeddingGenerator());
 
         services.AddTransient<ChatOrchestratorService>();
 

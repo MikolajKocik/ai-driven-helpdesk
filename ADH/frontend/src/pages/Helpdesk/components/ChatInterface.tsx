@@ -70,7 +70,7 @@ const ChatInterface: React.FC = () => {
             
             try {
               const data = JSON.parse(dataStr);
-              assistantMsg += data.content;
+              assistantMsg += (data.content ?? '');
               setMessages([...newMessages, { role: 'assistant', content: assistantMsg }]);
             } catch (e) {
               console.error("Parse error", e);

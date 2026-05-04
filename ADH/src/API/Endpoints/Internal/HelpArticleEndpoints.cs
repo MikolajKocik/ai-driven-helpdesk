@@ -32,8 +32,11 @@ public static class HelpArticleEndpoints
             IEmbeddingGenerator<string, Embedding<float>> embeddingService,
             CancellationToken cancellationToken) =>
         {
-            Embedding<float> embedding = await embeddingService.GenerateAsync(article.Content, null, cancellationToken);
-            article.Embedding = embedding.Vector;
+            var generatedEmbeddings = await embeddingService.GenerateAsync(new List<string> { article.Content }, null, cancellationToken);
+            if (generatedEmbeddings.Count > 0)
+            {
+                article.Embedding = generatedEmbeddings[0].Vector;
+            }
             
             await repo.AddAsync(article);
             return Results.Created($"/api/v{ApiHelper.MajorVersion}/articles/{article.Id}", new { article.Id, article.Title, article.Content });

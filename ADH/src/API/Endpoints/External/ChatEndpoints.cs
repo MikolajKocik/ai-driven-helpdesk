@@ -35,6 +35,8 @@ public static class ChatEndpoints
 
             await foreach (StreamingChatMessageContent chunk in chatService.ChatStreamAsync(history, context.RequestAborted))
             {
+                if (string.IsNullOrEmpty(chunk.Content)) continue;
+                
                 string json = JsonSerializer.Serialize(new { content = chunk.Content });
                 await context.Response.WriteAsync($"data: {json}\n\n", context.RequestAborted);
                 await context.Response.Body.FlushAsync(context.RequestAborted);
