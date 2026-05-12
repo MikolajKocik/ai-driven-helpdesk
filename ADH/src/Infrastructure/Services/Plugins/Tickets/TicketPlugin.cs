@@ -1,27 +1,34 @@
 using Microsoft.SemanticKernel;
-using System;
 using System.ComponentModel;
-using System.Threading;
-using System.Threading.Tasks;
-using ADH.Core.Entities;
-using ADH.Application.Interfaces;
+using Application.Interfaces;
+using Application.DTOs;
 
 namespace ADH.Infrastructure.Services.Plugins.Tickets;
 
 public sealed class TicketPlugin
 {
-    private readonly ITicketRepository _ticketRepo;
+    private readonly IJiraQueue _ticketQueue;
 
-    public TicketPlugin(ITicketRepository ticketRepo)
+    public TicketPlugin(IJiraQueue ticketQueue)
     {
-        _ticketRepo = ticketRepo;
+        _ticketQueue = ticketQueue;
     }
 
-    [KernelFunction, Description("Creates a new support ticket.")]
-    public async Task<string> CreateTicket(string description, CancellationToken cancellationToken = default)
+    [KernelFunction("CreateTicket")]
+    [Description("Creates a new standard IT support ticket. ALWAYS use this function when a user reports a technical problem, hardware issue, or needs IT help.")]    
+    public async Task<string> CreateTicket(
+        [Description("A very short, concise title summarizing the user's problem (max 5-6 words). YOU must generate this based on the user's input.")] string summary,
+        [Description("The full, detailed description of the user's problem. Leave it in the original language the user wrote it.")] string description,
+        CancellationToken cancellationToken = default
+        )
     {
-        var ticket = new Ticket { Description = description };
-        await _ticketRepo.AddAsync(ticket, cancellationToken);
-        return $"Ticket {ticket.Id} created.";
+        var workItem = new JiraWorkItem
+        {   
+            Summary = summary,
+            Description = description
+        };
+
+        await _ticketQueue.QueueJiraWorkItemAsync(workItem, cancellationToken);
+        return $"Ticket {workItem.Id} created.";
     }
 }

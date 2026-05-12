@@ -1,6 +1,3 @@
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using ADH.Application.Interfaces;
 using Microsoft.AspNetCore.SignalR;
 using ADH.Infrastructure.Hubs;
@@ -9,6 +6,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Application.Interfaces;
 using Application.DTOs;
+using ADH.Core.Entities;
 
 namespace ADH.Infrastructure.BackgroundServices;
 
@@ -53,6 +51,16 @@ public class JiraBackgroundProcessor : BackgroundService
                     if (key != null)
                     {
                         _logger.LogInformation("Jira issue created successfully in background: {Key}", key);
+                        
+                        var ticketRepo = scope.ServiceProvider.GetRequiredService<ITicketRepository>();
+                        Ticket? localTicket = await ticketRepo.GetByIdAsync(workItem.Id, stoppingToken);
+                        
+                        if (localTicket != null)
+                        {
+                            localTicket.LinkToExternalSystem("JIRA", key);
+                            await ticketRepo.UpdateAsync(localTicket, stoppingToken);
+                        }
+                        
                         await _hubContext.Clients.All.SendAsync("ReceiveMessage", "System", $"New Jira Issue created: {key}");
                     }
                     else
@@ -65,7 +73,6 @@ public class JiraBackgroundProcessor : BackgroundService
             }
             catch (OperationCanceledException)
             {
-                // Normal exit when service stops
             }
             catch (Exception ex)
             {

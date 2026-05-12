@@ -10,7 +10,6 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Embeddings;
 using ADH.Infrastructure.Services.Plugins.Ldap;
-using ADH.Infrastructure.Services.Plugins.Jira;
 using ADH.Infrastructure.Services.Plugins.Help;
 using ADH.Infrastructure.Services.Plugins.System;
 using ADH.Infrastructure.Services.Plugins.Tickets;
@@ -20,7 +19,6 @@ using ADH.Infrastructure.Services.Identity;
 using ADH.Infrastructure.Services.Assets;
 using ADH.Infrastructure.Services.Jira;
 using Microsoft.Extensions.AI;
-using System.Net.Http;
 using Infrastructure.BackgroundServices;
 using Application.Interfaces;
 using Infrastructure.Services.Jira;
@@ -83,6 +81,7 @@ public static class ServiceCollectionExtensions
     /// <summary>
     /// Adds AI-related services and plugins to the kernel.
     /// </summary>
+    #pragma warning disable CS0618
     public static IServiceCollection AddAiServices(this IServiceCollection services)
     {
         services.AddHttpClient("OllamaClient", (sp, client) =>
@@ -98,7 +97,6 @@ public static class ServiceCollectionExtensions
         services.AddTransient<LdapSearchPlugin>();
         services.AddTransient<LdapAccountPlugin>();
         services.AddTransient<LdapUserManagementPlugin>();
-        services.AddTransient<JiraPlugin>();
         services.AddTransient<SystemHealthPlugin>();
         services.AddTransient<KnowledgeProposalPlugin>();
         services.AddTransient<AssetPlugin>();
@@ -125,9 +123,7 @@ public static class ServiceCollectionExtensions
 
                 kernelBuilder.AddOpenAIChatCompletion(modelId: modelId, apiKey: apiKey);
 
-                #pragma warning disable CS0618
-                kernelBuilder.AddOpenAIEmbeddingGenerator(modelId: "text-embedding-3-small", apiKey: apiKey);
-                #pragma warning restore CS0618
+                kernelBuilder.AddOpenAITextEmbeddingGeneration(modelId: "text-embedding-3-small", apiKey: apiKey);
             }
             else
             {
@@ -141,7 +137,6 @@ public static class ServiceCollectionExtensions
             kernelBuilder.Plugins.AddFromObject(sp.GetRequiredService<LdapSearchPlugin>());
             kernelBuilder.Plugins.AddFromObject(sp.GetRequiredService<LdapAccountPlugin>());
             kernelBuilder.Plugins.AddFromObject(sp.GetRequiredService<LdapUserManagementPlugin>());
-            kernelBuilder.Plugins.AddFromObject(sp.GetRequiredService<JiraPlugin>());
             kernelBuilder.Plugins.AddFromObject(sp.GetRequiredService<SystemHealthPlugin>());
             kernelBuilder.Plugins.AddFromObject(sp.GetRequiredService<KnowledgeProposalPlugin>());
             kernelBuilder.Plugins.AddFromObject(sp.GetRequiredService<AssetPlugin>());
@@ -158,12 +153,13 @@ public static class ServiceCollectionExtensions
             sp.GetRequiredService<Kernel>()
             .GetRequiredService<IChatCompletionService>());
             
-        services.AddTransient<IEmbeddingGenerator<string, Embedding<float>>>(sp => 
+        services.AddTransient<ITextEmbeddingGenerationService>(sp => 
             sp.GetRequiredService<Kernel>()
-            .GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>());
+            .GetRequiredService<ITextEmbeddingGenerationService>());
 
         services.AddTransient<ChatOrchestratorService>();
 
         return services;
     }
+    #pragma warning restore CS0618
 }

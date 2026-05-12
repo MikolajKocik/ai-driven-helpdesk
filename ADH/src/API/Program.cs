@@ -18,6 +18,7 @@ using ADH.Infrastructure.Hubs;
 using ADH.API.Helpers;
 using Microsoft.EntityFrameworkCore;
 using ADH.Infrastructure.Persistence;
+using Application.Extensions;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -56,6 +57,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddAppApiVersioning();
 builder.Services.AddAppAuthentication(builder.Configuration);
 builder.Services.AddAppRateLimiting();
+builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddAiServices();
 

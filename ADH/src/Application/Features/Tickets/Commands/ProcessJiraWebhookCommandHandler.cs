@@ -1,19 +1,26 @@
 using System.Text.Json;
+using ADH.Application.Interfaces;
+using ADH.Core.Entities;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Features.Tickets.Commands;
 
-public class ProcessJiraWebhookCommandHandler : IRequestHandler<ProcessJiraWebhookCommand>
+public sealed class ProcessJiraWebhookCommandHandler : IRequestHandler<ProcessJiraWebhookCommand>
 {
+    private readonly ITicketRepository _ticketRepository;
     private readonly ILogger<ProcessJiraWebhookCommandHandler> _logger;
 
-    public ProcessJiraWebhookCommandHandler(ILogger<ProcessJiraWebhookCommandHandler> logger)
+    public ProcessJiraWebhookCommandHandler(
+        ITicketRepository ticketRepository,
+        ILogger<ProcessJiraWebhookCommandHandler> logger
+        )
     {
+        _ticketRepository = ticketRepository;
         _logger = logger;
     }
 
-    public Task Handle(ProcessJiraWebhookCommand request, CancellationToken cancellationToken)
+    public async Task Handle(ProcessJiraWebhookCommand request, CancellationToken cancellationToken)
     {
         var rawText = request.Payload;
 
@@ -28,7 +35,7 @@ public class ProcessJiraWebhookCommandHandler : IRequestHandler<ProcessJiraWebho
 
             if (webhookEvent == "jira:issue_updated")
             {
-                // TODO
+                await ProcessIssueUpdatedEvent(payload, cancellationToken);
                 _logger.LogInformation("Processing ticket update...");
             }
         }
@@ -36,7 +43,43 @@ public class ProcessJiraWebhookCommandHandler : IRequestHandler<ProcessJiraWebho
         {
             _logger.LogWarning("Otrzymano nieznany format webhooka.");
         }
+    }
 
-        return Task.CompletedTask;
+    private async Task ProcessIssueUpdatedEvent(JsonElement payload, CancellationToken cancellationToken)
+    {
+        try
+        {
+            if (payload.TryGetProperty("issue", out JsonElement issueElement))
+            {
+                string? jiraKey = issueElement.GetProperty("key").GetString();
+
+                string? newStatus = issueElement
+                    .GetProperty("fields")
+                    .GetProperty("status")
+                    .GetProperty("name")
+                    .GetString();
+                
+                if (!string.IsNullOrEmpty(jiraKey) && !string.IsNullOrEmpty(newStatus))
+                {
+                    _logger.LogInformation("Ticket {JiraKey} status updated to {NewStatus} in Jira.", jiraKey, newStatus);
+
+                    Ticket? ticket = await _ticketRepository.GetByIdAsync(Guid.Parse(jiraKey), cancellationToken);
+
+                    if (ticket != null)
+                    {
+                        ticket.UpdateStatusFromWebhook(newStatus);
+                        await _ticketRepository.UpdateAsync(ticket, cancellationToken);
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Local ticket: {ticket} not found", jiraKey);
+                    }
+                }
+            }
+        }
+        catch (KeyNotFoundException ex)
+        {
+            _logger.LogError(ex, "Error occured while parsing JIRA payload");
+        }
     }
 }

@@ -7,6 +7,7 @@ using MediatR;
 using ADH.Application.Features.Tickets.Commands;
 using System.Text.Json;
 using Application.Interfaces;
+using ADH.Application.Features.Tickets.Queries;
 
 namespace ADH.API.Endpoints.External;
 
@@ -22,17 +23,19 @@ public static class TicketEndpoints
     {
         RouteGroupBuilder group = app.MapGroup("tickets");
 
-        group.MapGet("/", async (ITicketRepository repo, CancellationToken cancellationToken) =>
+        group.MapGet("/", async ([FromServices] ICurrentUserService userService, [FromServices] IMediator mediatR, CancellationToken cancellationToken) =>
         {
-            IEnumerable<Ticket> tickets = await repo.GetAllAsync(cancellationToken);
+            var tickets = await mediatR.Send(new GetTicketsQuery(Guid.Parse(userService.UserId!)), cancellationToken);
             return Results.Ok(tickets);
-        });
+        })
+        .RequireAuthorization();
 
         group.MapPost("/", async (JiraWorkItem workItem, [FromServices] IMediator mediatR, CancellationToken cancellationToken) =>
         {
             await mediatR.Send(new CreateTicketCommand(workItem), cancellationToken);
             return Results.Created($"/api/v{ApiHelper.MajorVersion}/tickets/{workItem.Id}", workItem);
-        });
+        })
+        .RequireAuthorization();
 
         group.MapPost("/webhook", async ([FromBody] JsonElement payload, [FromServices] IWebhookQueue queue, CancellationToken cancellationToken) =>
         {

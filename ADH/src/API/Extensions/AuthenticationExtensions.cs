@@ -1,10 +1,5 @@
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Configuration;
 using System.Text;
 using ADH.Application.Interfaces;
 using ADH.Infrastructure.Services.Identity;
@@ -34,15 +29,6 @@ public static class AuthenticationExtensions
             };
         })
         .AddCookie("Cookies")
-        .AddOpenIdConnect("OpenIdConnect", options =>
-        {
-            options.Authority = configuration["Authentication:Oidc:Authority"];
-            options.ClientId = configuration["Authentication:Oidc:ClientId"];
-            options.ClientSecret = configuration["Authentication:Oidc:ClientSecret"];
-            options.ResponseType = OpenIdConnectResponseType.Code;
-            options.SaveTokens = true;
-            options.GetClaimsFromUserInfoEndpoint = true;
-        })
         .AddGoogle(options =>
         {
             options.ClientId = configuration["Authentication:Google:ClientId"] ?? "dummy";

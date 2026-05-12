@@ -23,14 +23,15 @@ public class CreateTicketCommandHandler : IRequestHandler<CreateTicketCommand>
 
     public async Task Handle(CreateTicketCommand request, CancellationToken cancellationToken)
     {
-        var ticket = new Ticket
-        {
-            Summary = request.WorkItem.Summary, 
-            Description = request.WorkItem.Description,
-            UserId = Guid.Parse(_userService.UserId!)
-        };
-        
+        var ticket = new Ticket(
+            request.WorkItem.Summary, 
+            request.WorkItem.Description,
+            Guid.Parse(_userService.UserId!)
+        );
+
         await _ticketRepository.AddAsync(ticket, cancellationToken);
+        
+        request.WorkItem.Id = ticket.Id;
         await _queue.QueueJiraWorkItemAsync(request.WorkItem, cancellationToken);
 
         await Task.CompletedTask;
