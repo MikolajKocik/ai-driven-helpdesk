@@ -4,9 +4,10 @@ import { ticketsApi } from '@/api';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Ticket as TicketIcon, Calendar, Clock, ChevronRight } from 'lucide-react';
+import type { Ticket } from '@/models';
 
 const TicketList: React.FC = () => {
-  const { data: tickets = [], isLoading } = useQuery({
+  const { data: tickets = [], isLoading } = useQuery<Ticket[]>({
     queryKey: ['tickets'],
     queryFn: () => ticketsApi.getTickets()
   });
@@ -36,7 +37,7 @@ const TicketList: React.FC = () => {
             <p className="text-lg">Brak aktywnych zgłoszeń</p>
           </div>
         ) : (
-          tickets.map((ticket: any) => (
+          tickets.map((ticket: Ticket) => (
             <Card key={ticket.id} className="group hover:border-primary/30 transition-all cursor-pointer bg-card/40 border-border/50">
               <CardContent className="p-5 flex items-center justify-between">
                 <div className="flex flex-col gap-3 flex-1">
