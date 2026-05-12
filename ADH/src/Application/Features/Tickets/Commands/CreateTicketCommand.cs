@@ -1,7 +1,7 @@
 using System;
 using MediatR;
-using ADH.Core.Entities;
+using Application.DTOs;
 
 namespace ADH.Application.Features.Tickets.Commands;
 
-public record CreateTicketCommand(string Description, Guid UserId) : IRequest<Ticket>;
+public record CreateTicketCommand(JiraWorkItem WorkItem) : IRequest;

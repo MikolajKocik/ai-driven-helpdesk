@@ -33,7 +33,7 @@ public class JiraService : IJiraService
         }
     }
 
-    public async Task<string> CreateIssueAsync(string summary, string description, string priority = "Medium")
+    public async Task<string> CreateIssueAsync(string summary, string description, CancellationToken cancellationToken, string priority = "Medium")
     {
         try
         {
@@ -49,12 +49,12 @@ public class JiraService : IJiraService
                 }
             };
 
-            HttpResponseMessage response = await _httpClient.PostAsync("/rest/api/2/issue", 
-                new StringContent(JsonSerializer.Serialize(issueData), Encoding.UTF8, "application/json"));
+            HttpResponseMessage response = await _httpClient.PostAsync("/rest/api/3/issue", 
+                new StringContent(JsonSerializer.Serialize(issueData), Encoding.UTF8, "application/json"), cancellationToken);
 
             if (response.IsSuccessStatusCode)
             {
-                string content = await response.Content.ReadAsStringAsync();
+                string content = await response.Content.ReadAsStringAsync(cancellationToken);
                 JsonDocument doc = JsonDocument.Parse(content);
                 return doc.RootElement.GetProperty("key").GetString() ?? "Unknown";
             }
@@ -69,14 +69,14 @@ public class JiraService : IJiraService
         }
     }
 
-    public async Task<string> GetIssueStatusAsync(string issueKey)
+    public async Task<string> GetIssueStatusAsync(string issueKey, CancellationToken cancellationToken)
     {
         try
         {
-            HttpResponseMessage response = await _httpClient.GetAsync($"/rest/api/2/issue/{issueKey}");
+            HttpResponseMessage response = await _httpClient.GetAsync($"/rest/api/3/issue/{issueKey}", cancellationToken);
             if (response.IsSuccessStatusCode)
             {
-                string content = await response.Content.ReadAsStringAsync();
+                string content = await response.Content.ReadAsStringAsync(cancellationToken);
                 JsonDocument doc = JsonDocument.Parse(content);
                 return doc.RootElement.GetProperty("fields").GetProperty("status").GetProperty("name").GetString() ?? "Unknown";
             }

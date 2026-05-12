@@ -1,15 +1,9 @@
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using Application.DTOs;
+using Application.Interfaces;
 
-namespace ADH.Application.Interfaces;
-
-public record JiraWorkItem(string Summary, string Description);
-
-public interface IJiraQueue
-{
-    ValueTask QueueJiraWorkItemAsync(JiraWorkItem workItem);
-    ValueTask<JiraWorkItem> DequeueAsync(CancellationToken cancellationToken);
-}
+namespace ADH.Infrastructure.Services.Jira;
 
 public sealed class JiraQueue : IJiraQueue
 {
@@ -20,7 +14,7 @@ public sealed class JiraQueue : IJiraQueue
         _queue = Channel.CreateUnbounded<JiraWorkItem>();
     }
 
-    public ValueTask QueueJiraWorkItemAsync(JiraWorkItem workItem)
+    public ValueTask QueueJiraWorkItemAsync(JiraWorkItem workItem, CancellationToken cancellationToken)
     {
         return _queue.Writer.WriteAsync(workItem);
     }

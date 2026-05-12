@@ -7,6 +7,8 @@ using ADH.Infrastructure.Hubs;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Application.Interfaces;
+using Application.DTOs;
 
 namespace ADH.Infrastructure.BackgroundServices;
 
@@ -46,7 +48,7 @@ public class JiraBackgroundProcessor : BackgroundService
                 using (IServiceScope scope = _serviceProvider.CreateScope())
                 {
                     IJiraService jiraService = scope.ServiceProvider.GetRequiredService<IJiraService>();
-                    string? key = await jiraService.CreateIssueAsync(workItem.Summary, workItem.Description);
+                    string? key = await jiraService.CreateIssueAsync(workItem.Summary, workItem.Description, stoppingToken);
                     
                     if (key != null)
                     {
@@ -56,6 +58,8 @@ public class JiraBackgroundProcessor : BackgroundService
                     else
                     {
                         _logger.LogWarning("Failed to create Jira issue in background for: {Summary}", workItem.Summary);
+                        await Task.Delay(TimeSpan.FromSeconds(30));
+                        await _queue.QueueJiraWorkItemAsync(workItem, stoppingToken);
                     }
                 }
             }

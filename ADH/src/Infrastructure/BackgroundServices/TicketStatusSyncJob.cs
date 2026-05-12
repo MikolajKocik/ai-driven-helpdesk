@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using ADH.Core.Entities;
 using ADH.Application.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
@@ -32,7 +27,7 @@ public class TicketStatusSyncJob : BackgroundService
         {
             try
             {
-                await SyncStatusesAsync();
+                await SyncStatusesAsync(stoppingToken);
             }
             catch (Exception ex)
             {
@@ -44,14 +39,14 @@ public class TicketStatusSyncJob : BackgroundService
         }
     }
 
-    private async Task SyncStatusesAsync()
+    private async Task SyncStatusesAsync(CancellationToken cancellationToken)
     {
         using IServiceScope scope = _serviceProvider.CreateScope();
         ITicketRepository ticketRepo = scope.ServiceProvider.GetRequiredService<ITicketRepository>();
         IJiraService jiraService = scope.ServiceProvider.GetRequiredService<IJiraService>();
 
         // Only fetch active tickets linked to Jira
-        IEnumerable<Ticket> tickets = await ticketRepo.GetAllAsync();
+        IEnumerable<Ticket> tickets = await ticketRepo.GetAllAsync(cancellationToken);
         List<Ticket> jiraTickets = tickets.Where(t => t.ExternalSystem == "Jira" && !t.IsResolved).ToList();
         
         _logger.LogInfo("Syncing {Count} active Jira tickets...", jiraTickets.Count);
@@ -60,7 +55,7 @@ public class TicketStatusSyncJob : BackgroundService
         {
             if (string.IsNullOrEmpty(ticket.ExternalId)) continue;
 
-            string externalStatus = await jiraService.GetIssueStatusAsync(ticket.ExternalId);
+            string externalStatus = await jiraService.GetIssueStatusAsync(ticket.ExternalId, cancellationToken);
             
             if (externalStatus != "NOT_FOUND" && externalStatus != "ERROR")
             {
@@ -69,7 +64,7 @@ public class TicketStatusSyncJob : BackgroundService
                     _logger.LogInfo("Updating ticket {Id} status: {Old} -> {New}", ticket.Id, ticket.Status, externalStatus);
                     ticket.Status = externalStatus;
                     ticket.LastSyncAt = DateTime.UtcNow;
-                    await ticketRepo.UpdateAsync(ticket);
+                    await ticketRepo.UpdateAsync(ticket, cancellationToken);
                 }
             }
         }
