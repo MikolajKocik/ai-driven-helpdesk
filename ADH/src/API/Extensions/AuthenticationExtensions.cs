@@ -47,11 +47,6 @@ public static class AuthenticationExtensions
         {
             options.ClientId = configuration["Authentication:Google:ClientId"] ?? "dummy";
             options.ClientSecret = configuration["Authentication:Google:ClientSecret"] ?? "dummy";
-        })
-        .AddMicrosoftAccount(options =>
-        {
-            options.ClientId = configuration["Authentication:Microsoft:ClientId"] ?? "dummy";
-            options.ClientSecret = configuration["Authentication:Microsoft:ClientSecret"] ?? "dummy";
         });
 
         services.AddScoped<IJwtService, JwtService>();
