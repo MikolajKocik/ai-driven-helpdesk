@@ -1,9 +1,11 @@
 using Microsoft.SemanticKernel;
+using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Threading;
 using System.Threading.Tasks;
 using ADH.Infrastructure.Services.Assets;
 using ADH.Application.Interfaces;
-using System.Collections.Generic;
 
 namespace ADH.Infrastructure.Services.Plugins.Assets;
 
@@ -17,12 +19,12 @@ public sealed class AssetDiscoveryPlugin
     }
 
     [KernelFunction, Description("Triggers an immediate discovery of new assets in the network and Active Directory.")]
-    public async Task<string> TriggerAssetDiscovery()
+    public async Task<string> TriggerAssetDiscovery(CancellationToken cancellationToken = default)
     {
         int totalFound = 0;
         foreach (IAssetDiscoveryService service in _discoveryServices)
         {
-            totalFound += await service.DiscoverNewAssetsAsync();
+            totalFound += await service.DiscoverNewAssetsAsync(cancellationToken);
         }
 
         return $"Asset discovery finished. Successfully found and imported {totalFound} new assets into the CMDB.";

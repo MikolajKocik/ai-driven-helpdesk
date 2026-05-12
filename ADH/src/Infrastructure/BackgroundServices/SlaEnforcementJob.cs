@@ -29,7 +29,7 @@ public sealed class SlaEnforcementJob : BackgroundService
         {
             try
             {
-                await EnforceSlaAsync();
+                await EnforceSlaAsync(stoppingToken);
             }
             catch (Exception ex)
             {
@@ -41,14 +41,14 @@ public sealed class SlaEnforcementJob : BackgroundService
         }
     }
 
-    private async Task EnforceSlaAsync()
+    private async Task EnforceSlaAsync(CancellationToken cancellationToken)
     {
         using IServiceScope scope = _serviceProvider.CreateScope();
         ITicketRepository ticketRepo = scope.ServiceProvider.GetRequiredService<ITicketRepository>();
         ISlaPolicyRepository slaRepo = scope.ServiceProvider.GetRequiredService<ISlaPolicyRepository>();
 
-        IEnumerable<Ticket> openTickets = await ticketRepo.GetAllAsync();
-        IEnumerable<SlaPolicy> policies = await slaRepo.GetAllAsync();
+        IEnumerable<Ticket> openTickets = await ticketRepo.GetAllAsync(cancellationToken);
+        IEnumerable<SlaPolicy> policies = await slaRepo.GetAllAsync(cancellationToken);
         
         Dictionary<string, SlaPolicy> policyMap = policies.ToDictionary(p => p.Priority);
 
@@ -90,7 +90,7 @@ public sealed class SlaEnforcementJob : BackgroundService
 
             if (changed)
             {
-                await ticketRepo.UpdateAsync(ticket);
+                await ticketRepo.UpdateAsync(ticket, cancellationToken);
             }
         }
     }

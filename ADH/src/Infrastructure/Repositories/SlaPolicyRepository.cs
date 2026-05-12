@@ -14,13 +14,13 @@ public sealed class SlaPolicyRepository : BaseRepository<SlaPolicy, ApplicationD
     {
     }
 
-    public override async Task<IEnumerable<SlaPolicy>> GetAllAsync()
+    public override async Task<IEnumerable<SlaPolicy>> GetAllAsync(CancellationToken cancellationToken)
     {
-        return await Context.SlaPolicies.ToListAsync();
+        return await Context.SlaPolicies.ToListAsync(cancellationToken);
     }
 
-    public async Task<SlaPolicy?> GetByPriorityAsync(string priority)
+    public async Task<SlaPolicy?> GetByPriorityAsync(string priority, CancellationToken cancellationToken)
     {
-        return await Context.SlaPolicies.FirstOrDefaultAsync(p => p.Priority == priority);
+        return await Context.SlaPolicies.FirstOrDefaultAsync(p => p.Priority == priority, cancellationToken);
     }
 }

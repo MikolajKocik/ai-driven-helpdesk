@@ -21,7 +21,7 @@ public static class ThirdAuthEndpoints
     {
         RouteGroupBuilder googleGroup = app.MapGroup("auth/google");
         
-        googleGroup.MapPost("/callback", async (GoogleAuthRequest request, IUserRepository repo, IJwtService jwtService, IConfiguration cfg) =>
+        googleGroup.MapPost("/callback", async (GoogleAuthRequest request, IUserRepository repo, IJwtService jwtService, IConfiguration cfg, CancellationToken cancellationToken) =>
         {
             try
             {
@@ -35,7 +35,7 @@ public static class ThirdAuthEndpoints
                 string email = payload.Email;
                 string name = payload.Name ?? payload.Email;
 
-                AppUser? user = await repo.GetByUsernameAsync(email);
+                AppUser? user = await repo.GetByUsernameAsync(email, cancellationToken);
                 if (user is null)
                 {
                     user = new AppUser
@@ -45,7 +45,7 @@ public static class ThirdAuthEndpoints
                         DisplayName = name,
                         Role = "Client"
                     };
-                    await repo.AddAsync(user);
+                    await repo.AddAsync(user, cancellationToken);
                 }
 
                 var token = jwtService.GenerateToken(user);

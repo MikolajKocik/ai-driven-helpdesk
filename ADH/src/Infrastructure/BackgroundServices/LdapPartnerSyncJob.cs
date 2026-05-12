@@ -36,7 +36,7 @@ public class LdapPartnerSyncJob : BackgroundService
         {
             try
             {
-                await SyncPartnerUsersAsync();
+                await SyncPartnerUsersAsync(stoppingToken);
             }
             catch (Exception ex)
             {
@@ -48,7 +48,7 @@ public class LdapPartnerSyncJob : BackgroundService
         }
     }
 
-    private async Task SyncPartnerUsersAsync()
+    private async Task SyncPartnerUsersAsync(CancellationToken stoppingToken)
     {
         using IServiceScope scope = _serviceProvider.CreateScope();
         ILdapService ldapService = scope.ServiceProvider.GetRequiredService<ILdapService>();
@@ -66,7 +66,7 @@ public class LdapPartnerSyncJob : BackgroundService
             {
                 // Logic to handle partner users (e.g. prefixing username with partner name)
                 string partnerUsername = $"{partner.Key}\\{user.Username}";
-                AppUser? existing = await userRepository.GetByUsernameAsync(partnerUsername);
+                AppUser? existing = await userRepository.GetByUsernameAsync(partnerUsername, stoppingToken);
 
                 if (existing == null)
                 {
@@ -77,7 +77,7 @@ public class LdapPartnerSyncJob : BackgroundService
                         Role = "Client", // Partners are usually clients
                         DisplayName = user.DisplayName,
                         Email = user.Email
-                    });
+                    }, stoppingToken);
                 }
             }
         }

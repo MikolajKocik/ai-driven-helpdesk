@@ -6,6 +6,6 @@ namespace ADH.Application.Interfaces;
 
 public interface ISlaPolicyRepository
 {
-    Task<IEnumerable<SlaPolicy>> GetAllAsync();
-    Task<SlaPolicy?> GetByPriorityAsync(string priority);
+    Task<IEnumerable<SlaPolicy>> GetAllAsync(CancellationToken cancellationToken);
+    Task<SlaPolicy?> GetByPriorityAsync(string priority, CancellationToken cancellationToken);
 }

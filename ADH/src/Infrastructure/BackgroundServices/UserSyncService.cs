@@ -34,7 +34,7 @@ public class UserSyncService : BackgroundService
         {
             try
             {
-                await SyncUsersAsync();
+                await SyncUsersAsync(stoppingToken);
             }
             catch (Exception ex)
             {
@@ -45,7 +45,7 @@ public class UserSyncService : BackgroundService
         }
     }
 
-    private async Task SyncUsersAsync()
+    private async Task SyncUsersAsync(CancellationToken cancellationToken)
     {
         using IServiceScope scope = _serviceProvider.CreateScope();
         ILdapService ldapService = scope.ServiceProvider.GetRequiredService<ILdapService>();
@@ -57,7 +57,7 @@ public class UserSyncService : BackgroundService
 
         foreach (LdapUserDto ldapUser in ldapUsers)
         {
-            AppUser? existingUser = await userRepository.GetByUsernameAsync(ldapUser.Username);
+            AppUser? existingUser = await userRepository.GetByUsernameAsync(ldapUser.Username, cancellationToken);
             
             if (existingUser == null)
             {
@@ -68,7 +68,7 @@ public class UserSyncService : BackgroundService
                     PasswordHash = "LDAP_AUTH",
                     Role = MapGroupsToRole(ldapUser.Groups)
                 };
-                await userRepository.AddAsync(newUser);
+                await userRepository.AddAsync(newUser, cancellationToken);
             }
             else
             {
@@ -78,7 +78,7 @@ public class UserSyncService : BackgroundService
                 {
                     _logger.LogInfo("Updating role for {Username}: {Old} -> {New}", existingUser.Username, existingUser.Role, newRole);
                     existingUser.Role = newRole;
-                    await userRepository.UpdateAsync(existingUser);
+                    await userRepository.UpdateAsync(existingUser, cancellationToken);
                 }
             }
         }

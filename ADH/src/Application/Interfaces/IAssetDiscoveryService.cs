@@ -4,5 +4,5 @@ namespace ADH.Application.Interfaces;
 
 public interface IAssetDiscoveryService
 {
-    Task<int> DiscoverNewAssetsAsync();
+    Task<int> DiscoverNewAssetsAsync(CancellationToken cancellationToken);
 }

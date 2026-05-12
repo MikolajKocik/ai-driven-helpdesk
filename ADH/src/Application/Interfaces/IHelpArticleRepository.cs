@@ -7,12 +7,12 @@ namespace ADH.Application.Interfaces;
 
 public interface IHelpArticleRepository
 {
-    Task<HelpArticle?> GetByIdAsync(Guid id);
-    Task<IEnumerable<HelpArticle>> GetAllAsync();
-    Task AddAsync(HelpArticle article);
-    Task UpdateAsync(HelpArticle article);
-    Task DeleteAsync(Guid id);
+    Task<HelpArticle?> GetByIdAsync(Guid id, CancellationToken cancellationToken);
+    Task<IEnumerable<HelpArticle>> GetAllAsync(CancellationToken cancellationToken);
+    Task AddAsync(HelpArticle article, CancellationToken cancellationToken);
+    Task UpdateAsync(HelpArticle article, CancellationToken cancellationToken);
+    Task DeleteAsync(Guid id, CancellationToken cancellationToken);
     
-    Task<IEnumerable<HelpArticle>> SearchSimilarAsync(float[] queryEmbedding, double matchThreshold, int matchCount);
-    Task<IEnumerable<HelpArticle>> SearchByTextAsync(string query);
+    Task<IEnumerable<HelpArticle>> SearchSimilarAsync(float[] queryEmbedding, double matchThreshold, int matchCount, CancellationToken cancellationToken);
+    Task<IEnumerable<HelpArticle>> SearchByTextAsync(string query, CancellationToken cancellationToken);
 }

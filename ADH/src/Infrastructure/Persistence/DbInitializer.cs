@@ -9,18 +9,18 @@ namespace ADH.Infrastructure.Persistence;
 
 public static class DbInitializer
 {
-    public static async Task SeedAsync(ApplicationDbContext context, IUserRepository userRepo)
+    public static async Task SeedAsync(ApplicationDbContext context, IUserRepository userRepo, CancellationToken cancellationToken = default)
     {
-        await context.Database.MigrateAsync();
+        await context.Database.MigrateAsync(cancellationToken);
 
-        var existingAdmin = await userRepo.GetByUsernameAsync("admin");
+        var existingAdmin = await userRepo.GetByUsernameAsync("admin", cancellationToken);
         if (existingAdmin == null)
         {
             await userRepo.AddAsync(new AppUser
             {
                 Username = "admin",
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin")
-            });
+            }, cancellationToken);
         }
 
         if (!context.AssetTypes.Any())
@@ -32,7 +32,7 @@ public static class DbInitializer
                 new AssetType { Name = "Server" },
                 new AssetType { Name = "Mobile" }
             });
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(cancellationToken);
         }
     }
 }

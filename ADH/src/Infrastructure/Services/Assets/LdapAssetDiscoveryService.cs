@@ -20,12 +20,12 @@ public sealed class LdapAssetDiscoveryService : IAssetDiscoveryService
         _logger = logger;
     }
 
-    public async Task<int> DiscoverNewAssetsAsync()
+    public async Task<int> DiscoverNewAssetsAsync(CancellationToken cancellationToken)
     {
         _logger.LogInfo("Starting LDAP Asset Discovery...");
         IEnumerable<LdapAssetDto> ldapComputers = await _ldapService.GetComputersAsync();
-        HashSet<string> existingAssets = (await _assetRepo.GetAllAsync()).Select(a => a.SerialNumber).ToHashSet();
-        IEnumerable<AssetType> assetTypes = await _assetRepo.GetAssetTypesAsync();
+        HashSet<string> existingAssets = (await _assetRepo.GetAllAsync(cancellationToken)).Select(a => a.SerialNumber).ToHashSet();
+        IEnumerable<AssetType> assetTypes = await _assetRepo.GetAssetTypesAsync(cancellationToken);
         AssetType computerType = assetTypes.FirstOrDefault(t => t.Name == "Computer") ?? assetTypes.First();
 
         int importedCount = 0;
@@ -43,7 +43,7 @@ public sealed class LdapAssetDiscoveryService : IAssetDiscoveryService
                     LastAuditDate = DateTime.UtcNow
                 };
 
-                await _assetRepo.AddAsync(newAsset);
+                await _assetRepo.AddAsync(newAsset, cancellationToken);
                 importedCount++;
             }
         }

@@ -1,5 +1,7 @@
 using Microsoft.SemanticKernel;
+using System;
 using System.ComponentModel;
+using System.Threading;
 using System.Threading.Tasks;
 using ADH.Core.Entities;
 using ADH.Application.Interfaces;
@@ -16,10 +18,10 @@ public sealed class TicketPlugin
     }
 
     [KernelFunction, Description("Creates a new support ticket.")]
-    public async Task<string> CreateTicket(string description)
+    public async Task<string> CreateTicket(string description, CancellationToken cancellationToken = default)
     {
         var ticket = new Ticket { Description = description };
-        await _ticketRepo.AddAsync(ticket);
+        await _ticketRepo.AddAsync(ticket, cancellationToken);
         return $"Ticket {ticket.Id} created.";
     }
 }

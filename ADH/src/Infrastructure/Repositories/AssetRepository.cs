@@ -16,32 +16,32 @@ public sealed class AssetRepository : BaseRepository<Asset, ApplicationDbContext
     {
     }
 
-    public async Task<IEnumerable<Asset>> GetByUserIdAsync(Guid userId)
+    public async Task<IEnumerable<Asset>> GetByUserIdAsync(Guid userId, CancellationToken cancellationToken)
     {
         return await Context.Assets
             .Include(a => a.AssetType)
             .Where(a => a.UserId == userId)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
     }
 
-    public override async Task<Asset?> GetByIdAsync(Guid id)
+    public override async Task<Asset?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
     {
         return await Context.Assets
             .Include(a => a.AssetType)
             .Include(a => a.User)
-            .FirstOrDefaultAsync(a => a.Id == id);
+            .FirstOrDefaultAsync(a => a.Id == id, cancellationToken);
     }
 
-    public override async Task<IEnumerable<Asset>> GetAllAsync()
+    public override async Task<IEnumerable<Asset>> GetAllAsync(CancellationToken cancellationToken)
     {
         return await Context.Assets
             .Include(a => a.AssetType)
             .Include(a => a.User)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
     }
 
-    public async Task<IEnumerable<AssetType>> GetAssetTypesAsync()
+    public async Task<IEnumerable<AssetType>> GetAssetTypesAsync(CancellationToken cancellationToken)
     {
-        return await Context.AssetTypes.ToListAsync();
+        return await Context.AssetTypes.ToListAsync(cancellationToken);
     }
 }

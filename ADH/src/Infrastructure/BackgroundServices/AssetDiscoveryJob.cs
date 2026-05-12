@@ -33,7 +33,7 @@ public sealed class AssetDiscoveryJob : BackgroundService
                     var discoveryServices = scope.ServiceProvider.GetServices<IAssetDiscoveryService>();
                     foreach (var service in discoveryServices)
                     {
-                        await service.DiscoverNewAssetsAsync();
+                        await service.DiscoverNewAssetsAsync(stoppingToken);
                     }
                 }
             }

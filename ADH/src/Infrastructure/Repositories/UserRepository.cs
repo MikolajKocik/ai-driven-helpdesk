@@ -19,8 +19,8 @@ public sealed class UserRepository : BaseRepository<AppUser, ApplicationDbContex
     {
     }
 
-    public async Task<AppUser?> GetByUsernameAsync(string username)
+    public async Task<AppUser?> GetByUsernameAsync(string username, CancellationToken cancellationToken)
     {
-        return await Context.Users.FirstOrDefaultAsync(u => u.Username == username);
+        return await Context.Users.FirstOrDefaultAsync(u => u.Username == username, cancellationToken);
     }
 }

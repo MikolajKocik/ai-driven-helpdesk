@@ -18,6 +18,6 @@ public class GetTicketsQueryHandler : IRequestHandler<GetTicketsQuery, IEnumerab
 
     public async Task<IEnumerable<Ticket>> Handle(GetTicketsQuery request, CancellationToken cancellationToken)
     {
-        return await _ticketRepository.GetAllForUserAsync(request.UserId);
+        return await _ticketRepository.GetAllForUserAsync(request.UserId, cancellationToken);
     }
 }

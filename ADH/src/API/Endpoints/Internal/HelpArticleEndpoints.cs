@@ -20,9 +20,9 @@ public static class HelpArticleEndpoints
     {
         RouteGroupBuilder group = app.MapGroup("articles");
 
-        group.MapGet("/", async (IHelpArticleRepository repo) =>
+        group.MapGet("/", async (IHelpArticleRepository repo, CancellationToken cancellationToken) =>
         {
-            IEnumerable<HelpArticle> articles = await repo.GetAllAsync();
+            IEnumerable<HelpArticle> articles = await repo.GetAllAsync(cancellationToken);
             return Results.Ok(articles.Select(a => new { a.Id, a.Title, a.Content }));
         });
 
@@ -38,13 +38,13 @@ public static class HelpArticleEndpoints
                 article.Embedding = generatedEmbeddings[0].Vector;
             }
             
-            await repo.AddAsync(article);
+            await repo.AddAsync(article, cancellationToken);
             return Results.Created($"/api/v{ApiHelper.MajorVersion}/articles/{article.Id}", new { article.Id, article.Title, article.Content });
         });
 
-        group.MapDelete("/{id}", async (Guid id, IHelpArticleRepository repo) =>
+        group.MapDelete("/{id}", async (Guid id, IHelpArticleRepository repo, CancellationToken cancellationToken) =>
         {
-            await repo.DeleteAsync(id);
+            await repo.DeleteAsync(id, cancellationToken);
             return Results.NoContent();
         });
     }

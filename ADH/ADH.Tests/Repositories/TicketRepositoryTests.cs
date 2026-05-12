@@ -49,7 +49,7 @@ public class TicketRepositoryTests : RepositoryTestBase
         };
 
         // Act
-        await _repository.AddAsync(ticket);
+        await _repository.AddAsync(ticket, CancellationToken.None);
 
         // Assert
         var dbTicket = await Context.Tickets.FirstOrDefaultAsync();
@@ -97,7 +97,7 @@ public class TicketRepositoryTests : RepositoryTestBase
         await Context.SaveChangesAsync();
 
         // Act
-        var result = await _repository.GetAllForUserAsync(userId);
+        var result = await _repository.GetAllForUserAsync(userId, CancellationToken.None);
 
         // Assert
         result.Should().HaveCount(2);

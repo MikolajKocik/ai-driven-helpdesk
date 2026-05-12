@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using ADH.Core.Entities;
 using ADH.Application.Interfaces;
 using ADH.Infrastructure.Persistence;
@@ -20,7 +16,7 @@ public sealed class HelpArticleRepository : BaseRepository<HelpArticle, Applicat
     {
     }
 
-    public async Task<IEnumerable<HelpArticle>> SearchSimilarAsync(float[] queryEmbedding, double matchThreshold, int matchCount)
+    public async Task<IEnumerable<HelpArticle>> SearchSimilarAsync(float[] queryEmbedding, double matchThreshold, int matchCount, CancellationToken cancellationToken)
     {
         string vectorStr = new Vector(queryEmbedding).ToString();
 
@@ -30,13 +26,13 @@ public sealed class HelpArticleRepository : BaseRepository<HelpArticle, Applicat
                 vectorStr, matchThreshold, matchCount
             );
 
-        return await query.ToListAsync();
+        return await query.ToListAsync(cancellationToken);
     }
 
-    public async Task<IEnumerable<HelpArticle>> SearchByTextAsync(string query)
+    public async Task<IEnumerable<HelpArticle>> SearchByTextAsync(string query, CancellationToken cancellationToken)
     {
         return await Context.HelpArticles
             .Where(a => a.Title.Contains(query) || a.Content.Contains(query))
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
     }
 }

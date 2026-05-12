@@ -34,22 +34,22 @@ public abstract class BaseRepository<TEntity, TContext>
         _isAuditable = typeof(TEntity).GetCustomAttribute<AuditableAttribute>() != null;
     }
 
-    public virtual async Task<IEnumerable<TEntity>> GetAllAsync()
+    public virtual async Task<IEnumerable<TEntity>> GetAllAsync(CancellationToken cancellationToken)
     {
-        return await DbSet.ToListAsync();
+        return await DbSet.ToListAsync(cancellationToken);
     }
 
-    public virtual async Task<TEntity?> GetByIdAsync(Guid id)
+    public virtual async Task<TEntity?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
     {
-        return await DbSet.FindAsync(id);
+        return await DbSet.FindAsync(id, cancellationToken);
     }
 
-    public virtual async Task AddAsync(TEntity entity)
+    public virtual async Task AddAsync(TEntity entity, CancellationToken cancellationToken)
     {
         if (!_isAuditable || Context.Database.ProviderName == "Microsoft.EntityFrameworkCore.InMemory")
         {
             await DbSet.AddAsync(entity);
-            await Context.SaveChangesAsync();
+            await Context.SaveChangesAsync(cancellationToken);
             return;
         }
 
@@ -57,71 +57,71 @@ public abstract class BaseRepository<TEntity, TContext>
         try
         {
             await DbSet.AddAsync(entity);
-            await Context.SaveChangesAsync();
+            await Context.SaveChangesAsync(cancellationToken);
             
-            await AuditInternalAsync(entity, "Create");
+            await AuditInternalAsync(entity, "Create", cancellationToken);
             
-            await transaction.CommitAsync();
+            await transaction.CommitAsync(cancellationToken);
             Logger.LogBusinessAction(typeof(TEntity).Name, "New", "Created");
         }
         catch (Exception ex)
         {
-            await transaction.RollbackAsync();
+            await transaction.RollbackAsync(cancellationToken);
             Logger.LogError(ex, "Transaction failed for Add operation on {Entity}", typeof(TEntity).Name);
             throw;
         }
     }
 
-    public virtual async Task UpdateAsync(TEntity entity)
+    public virtual async Task UpdateAsync(TEntity entity, CancellationToken cancellationToken)
     {
         if (!_isAuditable || Context.Database.ProviderName == "Microsoft.EntityFrameworkCore.InMemory")
         {
             DbSet.Update(entity);
-            await Context.SaveChangesAsync();
+            await Context.SaveChangesAsync(cancellationToken);
             return;
         }
 
-        using IDbContextTransaction transaction = await Context.Database.BeginTransactionAsync();
+        using IDbContextTransaction transaction = await Context.Database.BeginTransactionAsync(cancellationToken);
         try
         {
             DbSet.Update(entity);
-            await Context.SaveChangesAsync();
+            await Context.SaveChangesAsync(cancellationToken);
             
-            await AuditInternalAsync(entity, "Update");
+            await AuditInternalAsync(entity, "Update", cancellationToken);
             
-            await transaction.CommitAsync();
+            await transaction.CommitAsync(cancellationToken);
             string id = entity.GetType().GetProperty("Id")?.GetValue(entity)?.ToString() ?? "Unknown";
             Logger.LogBusinessAction(typeof(TEntity).Name, id, "Updated");
         }
         catch (Exception ex)
         {
-            await transaction.RollbackAsync();
+            await transaction.RollbackAsync(cancellationToken);
             Logger.LogError(ex, "Transaction failed for Update operation on {Entity}", typeof(TEntity).Name);
             throw;
         }
     }
 
-    public virtual async Task DeleteAsync(Guid id)
+    public virtual async Task DeleteAsync(Guid id, CancellationToken cancellationToken)
     {
-        TEntity? entity = await DbSet.FindAsync(id);
+        TEntity? entity = await DbSet.FindAsync(id, cancellationToken);
         if (entity == null) return;
 
         if (!_isAuditable)
         {
             DbSet.Remove(entity);
-            await Context.SaveChangesAsync();
+            await Context.SaveChangesAsync(cancellationToken);
             return;
         }
 
-        using IDbContextTransaction transaction = await Context.Database.BeginTransactionAsync();
+        using IDbContextTransaction transaction = await Context.Database.BeginTransactionAsync(cancellationToken);
         try
         {
             DbSet.Remove(entity);
-            await Context.SaveChangesAsync();
+            await Context.SaveChangesAsync(cancellationToken);
             
-            await AuditInternalAsync(entity, "Delete");
+            await AuditInternalAsync(entity, "Delete", cancellationToken);
             
-            await transaction.CommitAsync();
+            await transaction.CommitAsync(cancellationToken);
             Logger.LogBusinessAction(typeof(TEntity).Name, id.ToString(), "Deleted");
         }
         catch (Exception ex)
@@ -132,7 +132,7 @@ public abstract class BaseRepository<TEntity, TContext>
         }
     }
 
-    private async Task AuditInternalAsync(TEntity entity, string action)
+    private async Task AuditInternalAsync(TEntity entity, string action, CancellationToken cancellationToken)
     {
         try
         {
@@ -152,8 +152,8 @@ public abstract class BaseRepository<TEntity, TContext>
                 Timestamp = DateTime.UtcNow
             };
 
-            await Context.Set<AuditLog>().AddAsync(log);
-            await Context.SaveChangesAsync();
+            await Context.Set<AuditLog>().AddAsync(log, cancellationToken);
+            await Context.SaveChangesAsync(cancellationToken);
         }
         catch (Exception ex)
         {

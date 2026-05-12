@@ -7,8 +7,8 @@ namespace ADH.Application.Interfaces;
 
 public interface IUserRepository
 {
-    Task<AppUser?> GetByIdAsync(Guid id);
-    Task<AppUser?> GetByUsernameAsync(string username);
-    Task AddAsync(AppUser user);
-    Task UpdateAsync(AppUser user);
+    Task<AppUser?> GetByIdAsync(Guid id, CancellationToken cancellationToken);
+    Task<AppUser?> GetByUsernameAsync(string username, CancellationToken cancellationToken);
+    Task AddAsync(AppUser user, CancellationToken cancellationToken);
+    Task UpdateAsync(AppUser user, CancellationToken cancellationToken);
 }

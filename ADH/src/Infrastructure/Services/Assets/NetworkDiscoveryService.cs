@@ -24,7 +24,7 @@ public sealed class NetworkDiscoveryService : IAssetDiscoveryService
         _configuration = configuration;
     }
 
-    public async Task<int> DiscoverNewAssetsAsync()
+    public async Task<int> DiscoverNewAssetsAsync(CancellationToken cancellationToken)
     {
         _logger.LogInfo("Starting Network Asset Discovery (Ping Scan)...");
         int foundCount = 0;
@@ -56,18 +56,18 @@ public sealed class NetworkDiscoveryService : IAssetDiscoveryService
             }
 
             PingReply[] results = await Task.WhenAll(pingTasks);
-            foundCount += await ProcessDiscoveryResults(results);
+            foundCount += await ProcessDiscoveryResults(results, cancellationToken);
         }
 
         _logger.LogInfo("Network Discovery finished. Total found: {Count} new assets.", foundCount);
         return foundCount;
     }
 
-    private async Task<int> ProcessDiscoveryResults(PingReply[] results)
+    private async Task<int> ProcessDiscoveryResults(PingReply[] results, CancellationToken cancellationToken)
     {
         int count = 0;
-        HashSet<string> existingAssets = (await _assetRepo.GetAllAsync()).Select(a => a.SerialNumber).ToHashSet();
-        IEnumerable<AssetType> assetTypes = await _assetRepo.GetAssetTypesAsync();
+        HashSet<string> existingAssets = (await _assetRepo.GetAllAsync(cancellationToken)).Select(a => a.SerialNumber).ToHashSet();
+        IEnumerable<AssetType> assetTypes = await _assetRepo.GetAssetTypesAsync(cancellationToken);
         AssetType? defaultType = assetTypes.FirstOrDefault(t => t.Name == "Network Device") ?? assetTypes.FirstOrDefault();
 
         if (defaultType == null)
@@ -91,7 +91,7 @@ public sealed class NetworkDiscoveryService : IAssetDiscoveryService
                     LastAuditDate = DateTime.UtcNow
                 };
 
-                await _assetRepo.AddAsync(newAsset);
+                await _assetRepo.AddAsync(newAsset, cancellationToken);
                 count++;
             }
         }

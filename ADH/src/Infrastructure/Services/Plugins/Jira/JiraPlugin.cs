@@ -1,5 +1,7 @@
 using Microsoft.SemanticKernel;
+using System;
 using System.ComponentModel;
+using System.Threading;
 using System.Threading.Tasks;
 using ADH.Application.Interfaces;
 
@@ -15,10 +17,10 @@ public sealed class JiraPlugin
     }
 
     [KernelFunction, Description("Creates a Jira issue.")]
-    public async Task<string> CreateIssue(string summary, string description) => 
-        await _jiraService.CreateIssueAsync(summary, description);
+    public async Task<string> CreateIssue(string summary, string description, CancellationToken cancellationToken = default) => 
+        await _jiraService.CreateIssueAsync(summary, description, cancellationToken);
 
     [KernelFunction, Description("Gets Jira issue status.")]
-    public async Task<string> GetStatus(string key) => 
-        await _jiraService.GetIssueStatusAsync(key);
+    public async Task<string> GetStatus(string key, CancellationToken cancellationToken = default) => 
+        await _jiraService.GetIssueStatusAsync(key, cancellationToken);
 }

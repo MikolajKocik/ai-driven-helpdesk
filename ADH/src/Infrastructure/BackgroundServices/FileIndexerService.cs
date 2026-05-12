@@ -88,11 +88,11 @@ public class FileIndexerService : BackgroundService
             IHelpArticleRepository repo = scope.ServiceProvider.GetRequiredService<IHelpArticleRepository>();
             IEmbeddingGenerator<string, Embedding<float>> embeddingService = scope.ServiceProvider.GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>();
 
-            IEnumerable<HelpArticle> allArticles = await repo.GetAllAsync();
+            IEnumerable<HelpArticle> allArticles = await repo.GetAllAsync(cancellationToken);
             IEnumerable<HelpArticle> oldChunks = allArticles.Where(a => a.Title.StartsWith($"[LOCAL] {fileName}"));
             foreach (HelpArticle oldChunk in oldChunks)
             {
-                await repo.DeleteAsync(oldChunk.Id);
+                await repo.DeleteAsync(oldChunk.Id, cancellationToken);
             }
 
             List<string> chunks = SplitText(content, 1000, 200);
@@ -108,7 +108,7 @@ public class FileIndexerService : BackgroundService
                     Title = $"[LOCAL] {fileName} (Part {i + 1}/{chunks.Count})",
                     Content = chunkText,
                     Embedding = embedding.Vector
-                });
+                }, cancellationToken);
             }
 
             _logger.LogInformation("Finished indexing file: {File}", fileName);
