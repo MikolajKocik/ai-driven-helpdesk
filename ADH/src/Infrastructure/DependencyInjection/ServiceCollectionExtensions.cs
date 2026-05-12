@@ -4,15 +4,11 @@ using Microsoft.EntityFrameworkCore;
 using ADH.Infrastructure.Persistence;
 using ADH.Application.Interfaces;
 using ADH.Infrastructure.Repositories;
-using ADH.Infrastructure.Services;
-using ADH.Infrastructure.Services.Plugins;
 using ADH.Infrastructure.BackgroundServices;
 using ADH.Infrastructure.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Embeddings;
-using Microsoft.SemanticKernel.Connectors.Ollama;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
 using ADH.Infrastructure.Services.Plugins.Ldap;
 using ADH.Infrastructure.Services.Plugins.Jira;
 using ADH.Infrastructure.Services.Plugins.Help;
@@ -25,6 +21,9 @@ using ADH.Infrastructure.Services.Assets;
 using ADH.Infrastructure.Services.Jira;
 using Microsoft.Extensions.AI;
 using System.Net.Http;
+using Infrastructure.BackgroundServices;
+using Application.Interfaces;
+using Infrastructure.Services.Jira;
 
 namespace ADH.Infrastructure.DependencyInjection;
 
@@ -64,6 +63,10 @@ public static class ServiceCollectionExtensions
 
         services.AddHttpClient<IJiraService, JiraService>();
         
+        // Register queues
+        services.AddSingleton<IJiraQueue, JiraQueue>();
+        services.AddSingleton<IWebhookQueue, WebhookQueue>();
+        
         services.AddHostedService<UserSyncService>();
         services.AddHostedService<LdapPartnerSyncJob>();
         services.AddHostedService<TicketStatusSyncJob>();
@@ -72,6 +75,7 @@ public static class ServiceCollectionExtensions
         services.AddHostedService<SlaEnforcementJob>();
         services.AddHostedService<AssetDiscoveryJob>();
         services.AddHostedService<FileIndexerService>();
+        services.AddHostedService<JiraWebhookProcessor>();
 
         return services;
     }
@@ -120,13 +124,16 @@ public static class ServiceCollectionExtensions
                     throw new InvalidOperationException("OpenAI ApiKey is missing in configuration.");
 
                 kernelBuilder.AddOpenAIChatCompletion(modelId: modelId, apiKey: apiKey);
-                kernelBuilder.AddOpenAITextEmbeddingGeneration(modelId: "text-embedding-3-small", apiKey: apiKey);
+
+                #pragma warning disable CS0618
+                kernelBuilder.AddOpenAIEmbeddingGenerator(modelId: "text-embedding-3-small", apiKey: apiKey);
+                #pragma warning restore CS0618
             }
             else
             {
                 HttpClient ollamaClient = httpClientFactory.CreateClient("OllamaClient");
                 kernelBuilder.AddOllamaChatCompletion(modelId: "llama3.2", httpClient: ollamaClient);
-                kernelBuilder.AddOllamaTextEmbeddingGeneration(modelId: "nomic-embed-text", httpClient: ollamaClient);
+                kernelBuilder.AddOllamaEmbeddingGenerator(modelId: "nomic-embed-text", httpClient: ollamaClient);
             }
             
             kernelBuilder.Plugins.AddFromObject(sp.GetRequiredService<TicketPlugin>());
@@ -151,12 +158,9 @@ public static class ServiceCollectionExtensions
             sp.GetRequiredService<Kernel>()
             .GetRequiredService<IChatCompletionService>());
             
-        services.AddTransient<ITextEmbeddingGenerationService>(sp => 
-            sp.GetRequiredService<Kernel>()
-            .GetRequiredService<ITextEmbeddingGenerationService>());
-
         services.AddTransient<IEmbeddingGenerator<string, Embedding<float>>>(sp => 
-            sp.GetRequiredService<ITextEmbeddingGenerationService>().AsEmbeddingGenerator());
+            sp.GetRequiredService<Kernel>()
+            .GetRequiredService<IEmbeddingGenerator<string, Embedding<float>>>());
 
         services.AddTransient<ChatOrchestratorService>();
 
