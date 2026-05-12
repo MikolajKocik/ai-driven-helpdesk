@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using ADH.Core.Entities;
 using ADH.Application.Interfaces;
-using Microsoft.Extensions.AI;
+using Microsoft.SemanticKernel.Embeddings;
 using ADH.API.Helpers;
 
 namespace ADH.API.Endpoints.Internal;
@@ -29,13 +29,17 @@ public static class HelpArticleEndpoints
         group.MapPost("/", async (
             HelpArticle article, 
             IHelpArticleRepository repo, 
-            IEmbeddingGenerator<string, Embedding<float>> embeddingService,
+            ITextEmbeddingGenerationService embeddingService,
             CancellationToken cancellationToken) =>
         {
-            var generatedEmbeddings = await embeddingService.GenerateAsync(new List<string> { article.Content }, null, cancellationToken);
+            var generatedEmbeddings = await embeddingService.GenerateEmbeddingsAsync(
+                new List<string> { article.Content }, 
+                null, 
+                cancellationToken);
+
             if (generatedEmbeddings.Count > 0)
             {
-                article.Embedding = generatedEmbeddings[0].Vector;
+                article.Embedding = generatedEmbeddings[0].ToArray();
             }
             
             await repo.AddAsync(article, cancellationToken);
