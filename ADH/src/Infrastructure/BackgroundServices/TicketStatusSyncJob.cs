@@ -34,8 +34,8 @@ public class TicketStatusSyncJob : BackgroundService
                 _logger.LogError(ex, "Error occurred during ticket status sync.");
             }
 
-            // Sync every 15 minutes
-            await Task.Delay(TimeSpan.FromMinutes(15), stoppingToken);
+            // Sync every hour
+            await Task.Delay(TimeSpan.FromHours(1), stoppingToken);
         }
     }
 
@@ -46,10 +46,9 @@ public class TicketStatusSyncJob : BackgroundService
         IJiraService jiraService = scope.ServiceProvider.GetRequiredService<IJiraService>();
 
         // Only fetch active tickets linked to Jira
-        IEnumerable<Ticket> tickets = await ticketRepo.GetAllAsync(cancellationToken);
-        List<Ticket> jiraTickets = tickets.Where(t => t.ExternalSystem == "Jira" && !t.IsResolved).ToList();
-        
-        _logger.LogInfo("Syncing {Count} active Jira tickets...", jiraTickets.Count);
+        IEnumerable<Ticket> jiraTickets = await ticketRepo.GetActiveExternalTicketsAsync("JIRA", cancellationToken);
+
+        _logger.LogInfo("Syncing {Count} active Jira tickets...", jiraTickets.Count());
 
         foreach (Ticket ticket in jiraTickets)
         {
@@ -62,11 +61,13 @@ public class TicketStatusSyncJob : BackgroundService
                 if (ticket.Status != externalStatus)
                 {
                     _logger.LogInfo("Updating ticket {Id} status: {Old} -> {New}", ticket.Id, ticket.Status, externalStatus);
-                    ticket.Status = externalStatus;
-                    ticket.LastSyncAt = DateTime.UtcNow;
+        
+                    ticket.UpdateStatusFromWebhook(externalStatus);
                     await ticketRepo.UpdateAsync(ticket, cancellationToken);
                 }
             }
+
+            await Task.Delay(TimeSpan.FromMilliseconds(200), cancellationToken);
         }
     }
 }

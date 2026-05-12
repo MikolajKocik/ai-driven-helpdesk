@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using ADH.Core.Entities;
 using ADH.Application.Interfaces;
 using ADH.Infrastructure.Persistence;
@@ -46,6 +42,16 @@ public sealed class TicketRepository : BaseRepository<Ticket, ApplicationDbConte
         return await Context.Tickets
             .Include(t => t.User)
             .OrderByDescending(t => t.CreatedAt)
+            .ToListAsync(cancellationToken);
+    }
+    
+    /// <summary>
+    /// Get all external tickets to sync their status as fallback every hour if webhook failed
+    /// </summary>    
+    public async Task<IEnumerable<Ticket>> GetActiveExternalTicketsAsync(string systemName, CancellationToken cancellationToken)
+    {
+        return await Context.Tickets
+            .Where(t => t.ExternalSystem == systemName && t.Status != "Resolved" && t.Status != "Closed")
             .ToListAsync(cancellationToken);
     }
 }

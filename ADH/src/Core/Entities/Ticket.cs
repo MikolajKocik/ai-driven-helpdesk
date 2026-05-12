@@ -54,4 +54,40 @@ public sealed class Ticket
         Status = newStatus;
         LastSyncAt = DateTime.UtcNow;
     }
+
+    public void ApplySlaPolicy(int responseTimeMinutes, int resolutionTimeMinutes)
+    {
+        if (SlaResolutionDeadline == null)
+        {
+            SlaResponseDeadline = CreatedAt.AddMinutes(responseTimeMinutes);
+            SlaResolutionDeadline = CreatedAt.AddMinutes(resolutionTimeMinutes);
+        }
+    }
+
+    public bool EvaluateSlaStatus(DateTime currentTime)
+    {
+        if (SlaResolutionDeadline == null || IsResolved)
+        {
+            return false;
+        }
+
+        string newStatus = "InThreshold";
+
+        if (currentTime > SlaResolutionDeadline)
+        {
+            newStatus = "Violated";
+        }
+        else if (currentTime.AddMinutes(15) > SlaResolutionDeadline)
+        {
+            newStatus = "ApproachingThreshold";
+        }
+
+        if (SlaStatus == newStatus)
+        {
+            return false;
+        }
+        
+        SlaStatus = newStatus;
+        return true;
+    }
 }

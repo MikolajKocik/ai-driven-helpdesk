@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using ADH.Core.Entities;
 using ADH.Application.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
@@ -51,41 +46,24 @@ public sealed class SlaEnforcementJob : BackgroundService
         IEnumerable<SlaPolicy> policies = await slaRepo.GetAllAsync(cancellationToken);
         
         Dictionary<string, SlaPolicy> policyMap = policies.ToDictionary(p => p.Priority);
+        DateTime currentTime = DateTime.UtcNow;
 
         foreach (Ticket ticket in openTickets.Where(t => !t.IsResolved))
         {
             bool changed = false;
 
-            // 1. Assign SLA if missing
             if (ticket.SlaResolutionDeadline == null && policyMap.TryGetValue(ticket.Priority, out SlaPolicy? policy))
             {
-                ticket.SlaResponseDeadline = ticket.CreatedAt.AddMinutes(policy.ResponseTimeMinutes);
-                ticket.SlaResolutionDeadline = ticket.CreatedAt.AddMinutes(policy.ResolutionTimeMinutes);
+                ticket.ApplySlaPolicy(policy.ResponseTimeMinutes, policy.ResolutionTimeMinutes);
                 changed = true;
                 _logger.LogInfo("Assigned SLA to ticket {Id} based on priority {Priority}", ticket.Id, ticket.Priority);
             }
 
-            // 2. Check for violations
-            if (ticket.SlaResolutionDeadline != null)
+            bool slaStatusChanged = ticket.EvaluateSlaStatus(currentTime);
+            if (slaStatusChanged)
             {
-                DateTime now = DateTime.UtcNow;
-                string newStatus = "InThreshold";
-
-                if (now > ticket.SlaResolutionDeadline)
-                {
-                    newStatus = "Violated";
-                }
-                else if (now.AddMinutes(15) > ticket.SlaResolutionDeadline)
-                {
-                    newStatus = "ApproachingThreshold";
-                }
-
-                if (ticket.SlaStatus != newStatus)
-                {
-                    ticket.SlaStatus = newStatus;
-                    changed = true;
-                    _logger.LogWarning("SLA Status change for ticket {Id}: {Status}", ticket.Id, newStatus);
-                }
+                changed = true;
+                _logger.LogWarning("SLA Status change for ticket {Id}: {Status}", ticket.Id, ticket.SlaStatus);
             }
 
             if (changed)
