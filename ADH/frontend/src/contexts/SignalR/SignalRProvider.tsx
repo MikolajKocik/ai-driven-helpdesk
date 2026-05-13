@@ -1,7 +1,7 @@
 import React, { useEffect, useState, type ReactNode } from 'react';
 import * as signalR from '@microsoft/signalr';
-import { useAuth } from '../Auth/AuthProvider';
 import { SignalRContext } from './SignalRContext';
+import { useAuth } from '../Auth/useAuth';
 
 export const SignalRProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { token } = useAuth();

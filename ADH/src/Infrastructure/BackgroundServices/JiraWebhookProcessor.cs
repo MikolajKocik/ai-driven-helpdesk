@@ -46,6 +46,7 @@ public sealed class JiraWebhookProcessor : BackgroundService
                 {
                     _logger.LogInformation("Broadcasting 'TicketUpdated' event to all connected clients.");
                     await _hubContext.Clients.All.SendAsync("TicketUpdated", cancellationToken: stoppingToken);
+                    await _hubContext.Clients.All.SendAsync("NewSystemLog", "Ticket changed the status");
                 }
             }
         }

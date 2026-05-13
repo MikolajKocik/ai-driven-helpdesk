@@ -2,17 +2,21 @@ using ADH.Core.Entities;
 using ADH.Application.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.SignalR;
+using ADH.Infrastructure.Hubs;
 
 namespace ADH.Infrastructure.BackgroundServices;
 
 public sealed class SlaEnforcementJob : BackgroundService
 {
     private readonly IServiceProvider _serviceProvider;
+    private readonly IHubContext<ChatHub> _hubContext;
     private readonly IAppLogger<SlaEnforcementJob> _logger;
 
-    public SlaEnforcementJob(IServiceProvider serviceProvider, IAppLogger<SlaEnforcementJob> logger)
+    public SlaEnforcementJob(IServiceProvider serviceProvider, IHubContext<ChatHub> hubContext, IAppLogger<SlaEnforcementJob> logger)
     {
         _serviceProvider = serviceProvider;
+        _hubContext = hubContext;
         _logger = logger;
     }
 
@@ -69,6 +73,7 @@ public sealed class SlaEnforcementJob : BackgroundService
             if (changed)
             {
                 await ticketRepo.UpdateAsync(ticket, cancellationToken);
+                await _hubContext.Clients.All.SendAsync("NewSystemLog", $"SLA for ticket: {ticket.Id} has been changed!");
             }
         }
     }

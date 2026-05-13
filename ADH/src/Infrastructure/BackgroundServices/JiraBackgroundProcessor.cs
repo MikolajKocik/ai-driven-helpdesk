@@ -62,6 +62,7 @@ public class JiraBackgroundProcessor : BackgroundService
                         }
                         
                         await _hubContext.Clients.All.SendAsync("ReceiveMessage", "System", $"New Jira Issue created: {key}");
+                        await _hubContext.Clients.All.SendAsync("NewSystemLog", $"New Jira issue created: {key}");
                     }
                     else
                     {

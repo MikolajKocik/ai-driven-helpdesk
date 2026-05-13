@@ -8,8 +8,19 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/Button';
 import { StatCard } from './components/StatCard';
 import { containerVariants, itemVariants } from '@/lib/utils';
+import { useSignalR } from '@/contexts/SignalR/useSignalR';
+import { useEffect, useState } from 'react';
+
+interface SystemLog {
+  id: string,
+  message: string,
+  timestamp: Date
+}
 
 export default function AdminDashboardPage() {
+  const { connection } = useSignalR();
+  const [logs, setLogs] = useState<SystemLog[]>([]);
+
   const { data: stats, isLoading } = useQuery({
     queryKey: ['admin-stats'],
     queryFn: async () => {
@@ -17,6 +28,31 @@ export default function AdminDashboardPage() {
       return res.data;
     }
   });
+
+  useEffect(() => {
+    if (!connection) return;
+
+    const handleNewLog = (message: string) => {
+      const newLog: SystemLog = {
+        id: crypto.randomUUID(),
+        message: message,
+        timestamp: new Date()
+      };
+
+      setLogs(prevLogs => [newLog, ...prevLogs].slice(0, 10));
+    };
+
+    connection.on("NewSystemLog", handleNewLog);
+    
+    connection.on("TicketUpdated", () => {
+       handleNewLog("JIRA ticket status updated");
+    });
+
+    return () => {
+      connection.off("NewSystemLog", handleNewLog);
+      connection.off("TicketUpdated"); 
+    }
+  }, [connection])
 
   if (isLoading) return (
     <div className="flex-1 flex flex-col items-center justify-center">
@@ -80,16 +116,22 @@ export default function AdminDashboardPage() {
               <CardDescription>Logi systemowe w czasie rzeczywistym</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {[1, 2, 3, 4].map((_, i) => (
-                <div key={i} className="flex items-center gap-3 text-sm group">
+              {logs.length === 0 ? (
+                <p className="text-sm text-muted-foreground italic text-center py-4">Brak nowych zdarzeń...</p>
+              ) : (
+                logs.map((log) => (
+                <div key={log.id} className="flex items-center gap-3 text-sm group">
                   <div className="w-2 h-2 rounded-full bg-primary group-hover:scale-125 transition-transform" />
                   <div className="flex-1">
-                    <p className="font-medium">Utworzono ticket JIRA</p>
-                    <p className="text-xs text-muted-foreground text-opacity-70">{(i + 1) * 2} minuty temu</p>
+                    <p className="font-medium">{log.message}</p>
+                    <p className="text-xs text-muted-foreground text-opacity-70">
+                      {log.timestamp.toLocaleDateString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })} 
+                    </p>
                   </div>
                   <ArrowUpRight size={14} className="text-muted-foreground group-hover:text-primary transition-colors" />
                 </div>
-              ))}
+                ))
+              )}
             </CardContent>
           </Card>
         </motion.div>
