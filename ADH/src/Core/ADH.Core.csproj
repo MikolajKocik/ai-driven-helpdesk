@@ -5,8 +5,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+  
   <ItemGroup>
-    <PackageReference Include="Pgvector" Version="0.3.2" />
+    <PackageReference Include="Pgvector" Version="$(PgvectorVersion)" />
   </ItemGroup>
 
 </Project>

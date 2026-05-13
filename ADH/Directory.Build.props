@@ -1,0 +1,56 @@
+<Project>
+  <!-- Target Framework -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <!-- Package Versions -->
+  <PropertyGroup>
+    <!-- AspNetCore & Versioning -->
+    <AspVersioningHttpVersion>10.0.0</AspVersioningHttpVersion>
+    <AspVersioningMvcApiExplorerVersion>10.0.0</AspVersioningMvcApiExplorerVersion>
+    
+    <!-- Authentication & Security -->
+    <BCryptNetNextVersion>4.1.0</BCryptNetNextVersion>
+    <MicrosoftAspNetCoreAuthenticationGoogleVersion>10.0.7</MicrosoftAspNetCoreAuthenticationGoogleVersion>
+    <MicrosoftAspNetCoreAuthenticationJwtBearerVersion>10.0.7</MicrosoftAspNetCoreAuthenticationJwtBearerVersion>
+    <MicrosoftAspNetCoreAuthenticationMicrosoftAccountVersion>10.0.7</MicrosoftAspNetCoreAuthenticationMicrosoftAccountVersion>
+    <MicrosoftAspNetCoreAuthenticationOpenIdConnectVersion>10.0.7</MicrosoftAspNetCoreAuthenticationOpenIdConnectVersion>
+    <MicrosoftIdentityModelJsonWebTokensVersion>8.18.0</MicrosoftIdentityModelJsonWebTokensVersion>
+    <SystemIdentityModelTokensJwtVersion>8.18.0</SystemIdentityModelTokensJwtVersion>
+    <GoogleApisAuthVersion>1.74.0</GoogleApisAuthVersion>
+    
+    <!-- API & Web -->
+    <MicrosoftAspNetCoreOpenApiVersion>10.0.7</MicrosoftAspNetCoreOpenApiVersion>
+    <SwashbuckleAspNetCoreVersion>10.1.7</SwashbuckleAspNetCoreVersion>
+    <SerilogAspNetCoreVersion>10.0.0</SerilogAspNetCoreVersion>
+    
+    <!-- Database & ORM -->
+    <MicrosoftEntityFrameworkCoreVersion>10.0.7</MicrosoftEntityFrameworkCoreVersion>
+    <MicrosoftEntityFrameworkCoreDesignVersion>10.0.7</MicrosoftEntityFrameworkCoreDesignVersion>
+    <NpgsqlEntityFrameworkCorePgSqlVersion>10.0.1</NpgsqlEntityFrameworkCorePgSqlVersion>
+    <PgvectorVersion>0.3.2</PgvectorVersion>
+    <PgvectorEntityFrameworkCoreVersion>0.3.0</PgvectorEntityFrameworkCoreVersion>
+    <DapperVersion>2.1.72</DapperVersion>
+    
+    <!-- Validation & Serialization -->
+    <FluentValidationVersion>12.1.1</FluentValidationVersion>
+    <FluentValidationAspNetCoreVersion>11.3.1</FluentValidationAspNetCoreVersion>
+    
+    <!-- AI & Semantic Kernel -->
+    <MicrosoftSemanticKernelVersion>1.76.0</MicrosoftSemanticKernelVersion>
+    <MicrosoftSemanticKernelConnectorsOllamaVersion>1.76.0-alpha</MicrosoftSemanticKernelConnectorsOllamaVersion>
+    <MicrosoftSemanticKernelConnectorsOpenAIVersion>1.76.0</MicrosoftSemanticKernelConnectorsOpenAIVersion>
+    <MicrosoftExtensionsAIVersion>10.5.1</MicrosoftExtensionsAIVersion>
+    
+    <!-- CQRS & Mediator -->
+    <MediatRVersion>14.1.0</MediatRVersion>
+    
+    <!-- Infrastructure -->
+    <MicrosoftExtensionsHttpResilienceVersion>10.5.0</MicrosoftExtensionsHttpResilienceVersion>
+    <MicrosoftExtensionsLoggingAbstractionsVersion>10.0.7</MicrosoftExtensionsLoggingAbstractionsVersion>
+    <SystemDirectoryServicesProtocolsVersion>10.0.7</SystemDirectoryServicesProtocolsVersion>
+  </PropertyGroup>
+</Project>
