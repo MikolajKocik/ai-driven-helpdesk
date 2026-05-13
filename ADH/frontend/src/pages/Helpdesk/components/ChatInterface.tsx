@@ -1,18 +1,18 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { useSignalR } from '@/providers/SignalRProvider';
+import { useState, useRef, useEffect } from 'react';
 import { chatApi } from '@/api';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { User, Bot, Send, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useSignalR } from '@/contexts/SignalR/useSignalR';
 
 interface Message {
   role: 'user' | 'assistant';
   content: string;
 }
 
-const ChatInterface: React.FC = () => {
+export default function ChatInterface() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -168,5 +168,3 @@ const ChatInterface: React.FC = () => {
     </Card>
   );
 };
-
-export default ChatInterface;

@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { Sidebar } from '@/components/Layout/Sidebar';
 import ChatInterface from './components/ChatInterface';
 import TicketList from './components/TicketList';
-import { useAuth } from '@/providers/AuthProvider';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '@/contexts/Auth/useAuth';
 
 const HelpdeskPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'chat' | 'tickets'>('chat');

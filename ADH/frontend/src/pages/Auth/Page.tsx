@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useAuth } from '@/providers/AuthProvider';
 import { authApi } from '@/api';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -7,8 +6,9 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { ShieldCheck } from 'lucide-react';
 import { GoogleLogin } from '@react-oauth/google';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/Auth/useAuth';
 
-const AuthPage: React.FC = () => {
+export default function AuthPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const { login } = useAuth();
@@ -20,6 +20,7 @@ const AuthPage: React.FC = () => {
       login(data.token);
     } catch (err) {
       toast.error("Błąd logowania lub połączenia z serwerem");
+      console.error(err);
     }
   };
 
@@ -30,6 +31,7 @@ const AuthPage: React.FC = () => {
       toast.success("Zalogowano pomyślnie przez Google");
     } catch (err) {
       toast.error("Błąd logowania przez Google");
+      console.error(err);
     }
   };
 
@@ -103,5 +105,3 @@ const AuthPage: React.FC = () => {
     </div>
   );
 };
-
-export default AuthPage;
