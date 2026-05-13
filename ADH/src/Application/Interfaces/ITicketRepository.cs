@@ -10,4 +10,5 @@ public interface ITicketRepository
     Task AddAsync(Ticket ticket, CancellationToken cancellationToken);
     Task UpdateAsync(Ticket ticket, CancellationToken cancellationToken);
     Task<IEnumerable<Ticket>> GetActiveExternalTicketsAsync(string systemName, CancellationToken cancellationToken);
+    int GetResolvedTickets();
 }

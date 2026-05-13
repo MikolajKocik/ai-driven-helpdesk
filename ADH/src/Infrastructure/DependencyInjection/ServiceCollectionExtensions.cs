@@ -75,6 +75,11 @@ public static class ServiceCollectionExtensions
         services.AddHostedService<FileIndexerService>();
         services.AddHostedService<JiraWebhookProcessor>();
 
+        // Register MediatR handlers from Infrastructure
+        services.AddMediatR(cfg => {
+            cfg.RegisterServicesFromAssemblyContaining<ADH.Infrastructure.Features.Chat.Commands.ChatStreamCommandHandler>();
+        });
+
         return services;
     }
 

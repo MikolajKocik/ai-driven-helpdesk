@@ -11,4 +11,5 @@ public interface IUserRepository
     Task<AppUser?> GetByUsernameAsync(string username, CancellationToken cancellationToken);
     Task AddAsync(AppUser user, CancellationToken cancellationToken);
     Task UpdateAsync(AppUser user, CancellationToken cancellationToken);
+    Task<IEnumerable<AppUser?>> GetAllAsync(CancellationToken cancellationToken);
 }

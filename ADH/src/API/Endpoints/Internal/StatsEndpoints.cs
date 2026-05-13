@@ -1,8 +1,6 @@
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
-using ADH.Infrastructure.Persistence;
-using Microsoft.EntityFrameworkCore;
+using MediatR;
+using ADH.Application.Features.Stats.Queries;
+using Microsoft.AspNetCore.Mvc;
 
 namespace ADH.API.Endpoints.Internal;
 
@@ -16,20 +14,10 @@ public static class StatsEndpoints
     /// </summary>
     public static void MapStatsEndpoints(this IEndpointRouteBuilder app)
     {
-        app.MapGet("stats", async (ApplicationDbContext context) =>
+        app.MapGet("stats", async ([FromServices] IMediator mediatR, CancellationToken cancellationToken) =>
         {
-            int totalTickets = await context.Tickets.CountAsync();
-            int resolvedTickets = await context.Tickets.CountAsync(t => t.Status == "Resolved" || t.Status == "Closed");
-            int totalArticles = await context.HelpArticles.CountAsync();
-            int totalUsers = await context.Users.CountAsync();
-            
-            return Results.Ok(new 
-            { 
-                TotalTickets = totalTickets, 
-                ResolvedTickets = resolvedTickets, 
-                TotalArticles = totalArticles, 
-                TotalUsers = totalUsers 
-            });
+            object stats = await mediatR.Send(new GetStatsQuery(), cancellationToken);
+            return Results.Ok(stats);
         });
     }
 }

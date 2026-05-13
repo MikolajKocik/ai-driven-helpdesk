@@ -1,10 +1,9 @@
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
 using ADH.Core.Entities;
-using ADH.Application.Interfaces;
-using Microsoft.SemanticKernel.Embeddings;
 using ADH.API.Helpers;
+using MediatR;
+using ADH.Application.Features.HelpArticles.Queries;
+using ADH.Application.Features.HelpArticles.Commands;
+using Microsoft.AspNetCore.Mvc;
 
 namespace ADH.API.Endpoints.Internal;
 
@@ -20,35 +19,21 @@ public static class HelpArticleEndpoints
     {
         RouteGroupBuilder group = app.MapGroup("articles");
 
-        group.MapGet("/", async (IHelpArticleRepository repo, CancellationToken cancellationToken) =>
+        group.MapGet("/", async ([FromServices] IMediator mediatR, CancellationToken cancellationToken) =>
         {
-            IEnumerable<HelpArticle> articles = await repo.GetAllAsync(cancellationToken);
-            return Results.Ok(articles.Select(a => new { a.Id, a.Title, a.Content }));
+            IEnumerable<object> articles = await mediatR.Send(new GetAllHelpArticlesQuery(), cancellationToken);
+            return Results.Ok(articles);
         });
 
-        group.MapPost("/", async (
-            HelpArticle article, 
-            IHelpArticleRepository repo, 
-            ITextEmbeddingGenerationService embeddingService,
-            CancellationToken cancellationToken) =>
+        group.MapPost("/", async (HelpArticle article, [FromServices] IMediator mediatR, CancellationToken cancellationToken) =>
         {
-            var generatedEmbeddings = await embeddingService.GenerateEmbeddingsAsync(
-                new List<string> { article.Content }, 
-                null, 
-                cancellationToken);
-
-            if (generatedEmbeddings.Count > 0)
-            {
-                article.Embedding = generatedEmbeddings[0].ToArray();
-            }
-            
-            await repo.AddAsync(article, cancellationToken);
-            return Results.Created($"/api/v{ApiHelper.MajorVersion}/articles/{article.Id}", new { article.Id, article.Title, article.Content });
+            object result = await mediatR.Send(new CreateHelpArticleCommand(article), cancellationToken);
+            return Results.Created($"/api/v{ApiHelper.MajorVersion}/articles/{article.Id}", result);
         });
 
-        group.MapDelete("/{id}", async (Guid id, IHelpArticleRepository repo, CancellationToken cancellationToken) =>
+        group.MapDelete("/{id}", async (Guid id, [FromServices] IMediator mediatR, CancellationToken cancellationToken) =>
         {
-            await repo.DeleteAsync(id, cancellationToken);
+            await mediatR.Send(new DeleteHelpArticleCommand(id), cancellationToken);
             return Results.NoContent();
         });
     }

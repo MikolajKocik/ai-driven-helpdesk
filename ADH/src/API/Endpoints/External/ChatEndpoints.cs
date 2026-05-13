@@ -1,14 +1,9 @@
-using System.Collections.Generic;
 using System.Text.Json;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
-using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.ChatCompletion;
-using ADH.Application.Interfaces;
-using ADH.Infrastructure.Services.AI;
 using ADH.Application.DTOs;
+using MediatR;
+using ADH.Application.Features.Chat.Commands;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.SemanticKernel;
 
 namespace ADH.API.Endpoints.External;
 
@@ -22,18 +17,14 @@ public static class ChatEndpoints
     /// </summary>
     public static void MapChatEndpoints(this IEndpointRouteBuilder app)
     {
-        app.MapPost("chat/stream", async (HttpContext context, ChatRequest request, ChatOrchestratorService chatService) =>
+        app.MapPost("chat/stream", async (HttpContext context, ChatRequest request, [FromServices] IMediator mediatR) =>
         {
             context.Response.ContentType = "text/event-stream";
             
-            ChatHistory history = new ChatHistory();
-            foreach (var msg in request.Messages)
-            {
-                if (msg.Role == "user") history.AddUserMessage(msg.Content);
-                else history.AddAssistantMessage(msg.Content);
-            }
+            IAsyncEnumerable<StreamingChatMessageContent> stream = 
+                await mediatR.Send(new ChatStreamCommand(request), context.RequestAborted);
 
-            await foreach (StreamingChatMessageContent chunk in chatService.ChatStreamAsync(history, context.RequestAborted))
+            await foreach (StreamingChatMessageContent chunk in stream)
             {
                 if (string.IsNullOrEmpty(chunk.Content)) continue;
                 

@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using ADH.Core.Entities;
 using ADH.Application.Interfaces;
 using ADH.Infrastructure.Persistence;
@@ -19,8 +15,9 @@ public sealed class UserRepository : BaseRepository<AppUser, ApplicationDbContex
     {
     }
 
-    public async Task<AppUser?> GetByUsernameAsync(string username, CancellationToken cancellationToken)
-    {
-        return await Context.Users.FirstOrDefaultAsync(u => u.Username == username, cancellationToken);
-    }
+    public async Task<AppUser?> GetByUsernameAsync(string username, CancellationToken cancellationToken) 
+        => await Context.Users.FirstOrDefaultAsync(u => u.Username == username, cancellationToken);
+
+    public async Task<IEnumerable<AppUser?>> GetAllAsync(CancellationToken cancellationToken)
+        =>  await Context.Users.ToListAsync(cancellationToken);
 }
