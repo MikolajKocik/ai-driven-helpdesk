@@ -1,16 +1,16 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Trash2, BookOpen, Search, ArrowLeft, Loader2 } from 'lucide-react';
 import { articlesApi } from '@/api';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
+import Badge from '@/components/ui/Badge';
 
-const AdminArticlesPage: React.FC = () => {
+export default function AdminArticlesPage() {
   const queryClient = useQueryClient();
   const [newArticle, setNewArticle] = useState({ title: '', content: '' });
 
@@ -167,5 +167,3 @@ const AdminArticlesPage: React.FC = () => {
     </motion.div>
   );
 };
-
-export default AdminArticlesPage;

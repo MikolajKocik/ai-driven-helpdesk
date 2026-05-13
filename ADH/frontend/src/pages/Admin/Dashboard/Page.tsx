@@ -1,14 +1,15 @@
-import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { BarChart3, Users, Ticket, BookOpen, CheckCircle, ArrowUpRight, ArrowLeft, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { api } from '@/api';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
+import Badge from '@/components/ui/Badge';
 import { motion } from 'framer-motion';
+import { Button } from '@/components/ui/Button';
+import { StatCard } from './components/StatCard';
+import { containerVariants, itemVariants } from '@/lib/utils';
 
-const AdminDashboardPage: React.FC = () => {
+export default function AdminDashboardPage() {
   const { data: stats, isLoading } = useQuery({
     queryKey: ['admin-stats'],
     queryFn: async () => {
@@ -16,44 +17,6 @@ const AdminDashboardPage: React.FC = () => {
       return res.data;
     }
   });
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 }
-  };
-
-  const StatCard = ({ title, value, icon: Icon, color, description }: any) => (
-    <motion.div variants={itemVariants}>
-      <Card className="bg-card/40 border-border/50 overflow-hidden relative backdrop-blur-sm hover:bg-card/60 transition-colors">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">{title}</CardTitle>
-          <Icon className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-3xl font-bold">{value}</div>
-          <p className="text-xs text-muted-foreground mt-1">
-            {description}
-          </p>
-          <div 
-            className="absolute bottom-0 right-0 w-24 h-24 -mr-8 -mb-8 opacity-[0.05]" 
-            style={{ color }}
-          >
-            <Icon size={96} />
-          </div>
-        </CardContent>
-      </Card>
-    </motion.div>
-  );
 
   if (isLoading) return (
     <div className="flex-1 flex flex-col items-center justify-center">
@@ -134,5 +97,3 @@ const AdminDashboardPage: React.FC = () => {
     </motion.div>
   );
 };
-
-export default AdminDashboardPage;
