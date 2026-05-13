@@ -2,7 +2,7 @@ import React from 'react';
 import { MessageSquare, Ticket as TicketIcon, ShieldCheck, Database, LogOut, BarChart3 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '../ui/Button';
-import { cn } from '@/lib/utils';
+import { NavItem } from './NavItem';
 
 type SidebarProps = {
   activeTab: 'chat' | 'tickets';
@@ -14,20 +14,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange, onLogo
   const navigate = useNavigate();
   const location = useLocation();
   const isAdminPage = location.pathname.startsWith('/admin');
-
-  const NavItem = ({ icon: Icon, label, isActive, onClick }: any) => (
-    <Button
-      variant={isActive ? "secondary" : "ghost"}
-      className={cn(
-        "w-full justify-start gap-3 text-base h-11",
-        isActive && "bg-secondary font-semibold"
-      )}
-      onClick={onClick}
-    >
-      <Icon size={20} className={isActive ? "text-primary" : "text-muted-foreground"} />
-      {label}
-    </Button>
-  );
 
   return (
     <aside className="w-72 border-r border-border bg-card/30 flex flex-col p-6 gap-8">
@@ -42,7 +28,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange, onLogo
         <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-2 mb-2">
           Użytkownik
         </div>
-        <NavItem 
+        <NavItem
           icon={MessageSquare} 
           label="AI Helpdesk" 
           isActive={activeTab === 'chat' && !isAdminPage}
