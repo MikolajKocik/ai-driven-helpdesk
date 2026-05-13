@@ -6,4 +6,4 @@ using MediatR;
 
 namespace Application.Features.Tickets.Commands;
 
-public record ProcessJiraWebhookCommand(string Payload) : IRequest;
+public record ProcessJiraWebhookCommand(string Payload) : IRequest<bool>;

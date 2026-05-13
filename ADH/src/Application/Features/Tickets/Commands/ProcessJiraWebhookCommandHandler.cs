@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Application.Features.Tickets.Commands;
 
-public sealed class ProcessJiraWebhookCommandHandler : IRequestHandler<ProcessJiraWebhookCommand>
+public sealed class ProcessJiraWebhookCommandHandler : IRequestHandler<ProcessJiraWebhookCommand, bool>
 {
     private readonly ITicketRepository _ticketRepository;
     private readonly ILogger<ProcessJiraWebhookCommandHandler> _logger;
@@ -20,7 +20,7 @@ public sealed class ProcessJiraWebhookCommandHandler : IRequestHandler<ProcessJi
         _logger = logger;
     }
 
-    public async Task Handle(ProcessJiraWebhookCommand request, CancellationToken cancellationToken)
+    public async Task<bool> Handle(ProcessJiraWebhookCommand request, CancellationToken cancellationToken)
     {
         var rawText = request.Payload;
 
@@ -35,17 +35,19 @@ public sealed class ProcessJiraWebhookCommandHandler : IRequestHandler<ProcessJi
 
             if (webhookEvent == "jira:issue_updated")
             {
-                await ProcessIssueUpdatedEvent(payload, cancellationToken);
                 _logger.LogInformation("Processing ticket update...");
+                return await ProcessIssueUpdatedEvent(payload, cancellationToken);
             }
         }
         else
         {
             _logger.LogWarning("Otrzymano nieznany format webhooka.");
         }
+
+        return false;
     }
 
-    private async Task ProcessIssueUpdatedEvent(JsonElement payload, CancellationToken cancellationToken)
+    private async Task<bool> ProcessIssueUpdatedEvent(JsonElement payload, CancellationToken cancellationToken)
     {
         try
         {
@@ -69,10 +71,12 @@ public sealed class ProcessJiraWebhookCommandHandler : IRequestHandler<ProcessJi
                     {
                         ticket.UpdateStatusFromWebhook(newStatus);
                         await _ticketRepository.UpdateAsync(ticket, cancellationToken);
+                        return true;
                     }
                     else
                     {
                         _logger.LogWarning("Local ticket: {ticket} not found", jiraKey);
+                        return false;
                     }
                 }
             }
@@ -81,5 +85,11 @@ public sealed class ProcessJiraWebhookCommandHandler : IRequestHandler<ProcessJi
         {
             _logger.LogError(ex, "Error occured while parsing JIRA payload");
         }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error occured during Jira webhook processing");
+        }
+
+        return false;
     }
 }

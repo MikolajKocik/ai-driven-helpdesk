@@ -1,16 +1,35 @@
-import React from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ticketsApi } from '@/api';
 import { Card, CardContent } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
+import Badge from '@/components/ui/Badge';
 import { Ticket as TicketIcon, Calendar, Clock, ChevronRight } from 'lucide-react';
 import type { Ticket } from '@/models';
+import { useEffect } from 'react';
+import { useSignalR } from '@/contexts/SignalR/useSignalR';
 
-const TicketList: React.FC = () => {
+export default function TicketList() {
+  const queryClient = useQueryClient();
+  const { connection } = useSignalR();
+
   const { data: tickets = [], isLoading } = useQuery<Ticket[]>({
     queryKey: ['tickets'],
     queryFn: () => ticketsApi.getTickets()
   });
+  
+  useEffect(() => {
+    if (!connection) return;
+
+    const handleTicketUpdate = () => {
+      console.log("Received update from JIRA! Refreshing list...");
+      queryClient.invalidateQueries({ queryKey: ['tickets'] })
+    };
+
+    connection.on("TicketUpdated", handleTicketUpdate);
+
+    return () => {
+      connection.off("TicketUpdated", handleTicketUpdate);
+    };
+  }, [connection, queryClient])
 
   if (isLoading) return (
     <div className="flex-1 flex items-center justify-center">
@@ -72,5 +91,3 @@ const TicketList: React.FC = () => {
     </div>
   );
 };
-
-export default TicketList;
