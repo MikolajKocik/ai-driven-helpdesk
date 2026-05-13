@@ -1,8 +1,8 @@
 import React, { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { useAuth } from '@/providers/AuthProvider';
 import AuthPage from '@/pages/Auth/Page';
 import HelpdeskPage from '@/pages/Helpdesk/Page';
+import { useAuth } from '@/contexts/Auth/useAuth';
 
 const AdminArticlesPage = lazy(() => import('@/pages/Admin/Articles/Page'));
 const AdminDashboardPage = lazy(() => import('@/pages/Admin/Dashboard/Page'));
