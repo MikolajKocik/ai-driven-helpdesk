@@ -1,0 +1,24 @@
+# dependencies and build based
+**/node_modules
+**/npm-debug.log
+**/build
+**/dist
+
+# .NET 
+**/bin
+**/obj
+**/.vs
+**/.vscode
+
+# logs based
+**/.DS_Store
+**/logs
+**/*.log
+
+# secrets
+**/.env
+**/.env.local
+**/secrets.dev.yaml
+**/secrets.json
+**/appsettings.Development.json
+**/.microsoft/usersecrets/**
