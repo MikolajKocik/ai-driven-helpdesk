@@ -1,9 +1,8 @@
 using System.Net;
 using System.Net.Http.Json;
-using System.Threading.Tasks;
 using ADH.Application.DTOs;
+using ADH.Tests.Integration.Shared;
 using FluentAssertions;
-using Xunit;
 
 namespace ADH.Tests.Integration;
 

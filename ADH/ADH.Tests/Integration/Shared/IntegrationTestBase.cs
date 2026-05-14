@@ -2,12 +2,9 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using ADH.Infrastructure.Persistence;
-using System.Net.Http;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using System.Linq;
 using Microsoft.Extensions.Hosting;
 
-namespace ADH.Tests.Integration;
+namespace ADH.Tests.Integration.Shared;
 
 public class IntegrationTestBase : WebApplicationFactory<Program>
 {
